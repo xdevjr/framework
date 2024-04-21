@@ -6,7 +6,7 @@ class HomeController
 {
     public function index()
     {
-        return response();
+        echo "<h1>Home</h1>";
     }
 
 }
