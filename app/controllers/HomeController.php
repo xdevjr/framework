@@ -2,11 +2,13 @@
 
 namespace app\controllers;
 
+use core\library\Request;
+
 class HomeController
 {
     public function index()
     {
-        echo "<h1>Home</h1>";
+        dd(Request::all()->get);
     }
 
 }
