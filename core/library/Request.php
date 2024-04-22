@@ -18,6 +18,7 @@ class Request
     public function __get(string $key): array
     {
         $key = "_" . strtoupper($key);
-        return array_map('trim', $this->data[$key]);
+        $data = array_map('strip_tags', array_map('trim', $this->data[$key]));
+        return $data;
     }
 }
