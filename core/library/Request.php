@@ -5,20 +5,21 @@ namespace core\library;
 class Request
 {
     public function __construct(
-        public array $data
+        private array $get,
+        private array $post,
+        private array $files,
+        private array $cookies,
+        private array $server
     ) {
     }
 
     public static function all(): static
     {
-        $data = filter_var_array($GLOBALS);
-        return new static($GLOBALS);
+        return new static($_GET, $_POST, $_FILES, $_COOKIE, $_SERVER);
     }
 
     public function __get(string $key): array
     {
-        $key = "_" . strtoupper($key);
-        $data = array_map('strip_tags', array_map('trim', $this->data[$key]));
-        return $data;
+        return array_map('strip_tags', array_map('trim', $this->$key));
     }
 }
