@@ -55,7 +55,7 @@ class Paginator
                             </li>";
 
         $before = max(1, $this->currentPage - floor($this->maxLinksPerPage / 2));
-        $after = min($this->getTotalPages(), $this->currentPage + floor($this->maxLinksPerPage / 2));
+        $after = max(min($this->getTotalPages(), $this->currentPage + floor($this->maxLinksPerPage / 2)), $this->maxLinksPerPage);
 
         for ($i = $before; $i <= $after; $i++) {
             if ($i == $this->currentPage) {
