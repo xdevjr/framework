@@ -1,4 +1,5 @@
 <?php
+session_start();
 use Pecee\SimpleRouter\SimpleRouter as Router;
 
 require ("../vendor/autoload.php");
