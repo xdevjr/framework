@@ -21,13 +21,13 @@ class Response
         return;
     }
 
-    public function send(bool $json = false): void
+    public function send(bool $json = false): mixed
     {
         http_response_code($this->statusCode);
         $json ? header("Content-Type: application/json") : null;
         $this->getHeaders();
 
-        echo $json ? json_encode($this->body) : $this->body;
+        return $json ? json_encode($this->body) : $this->body;
     }
 
     public function redirect(string $url, bool $json = false): void
