@@ -18,3 +18,11 @@ function url(?string $name = null, $parameters = null, ?array $getParams = null)
 {
     return Router::getUrl($name, $parameters, $getParams);
 }
+
+function view(string $view, array $data = []): void
+{
+    $loader = new \Twig\Loader\FilesystemLoader(dirname(__DIR__, 2).'/app/views');
+    $twig = new \Twig\Environment($loader);
+
+    echo $twig->render("$view.twig", $data);
+}
