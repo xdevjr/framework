@@ -4,52 +4,53 @@ namespace core\library;
 
 class Session
 {
-
-    public static function all()
+    public function all(): array
     {
         return $_SESSION;
     }
 
-    public static function get(string $key): mixed
+    public function get(string $key): mixed
     {
-        return self::has($key) ? $_SESSION[$key] : null;
+        return $this->has($key) ? $_SESSION[$key] : null;
     }
 
-    public static function set(string $key, mixed $value): void
+    public function set(string $key, mixed $value): void
     {
         $_SESSION[$key] = $value;
     }
-    public static function has(string $key): bool
+    public function has(string $key): bool
     {
         return isset($_SESSION[$key]);
     }
 
-    public static function remove(string $key): void
+    public function remove(string $key): void
     {
-        if (self::has($key))
+        if ($this->has($key))
             unset($_SESSION[$key]);
     }
 
-    public static function removeAll(): void
+    public function removeAll(): void
     {
         session_destroy();
     }
 
-    public static function flash(string $key, mixed $value): void
+    public function flash(string $key, mixed $value): void
     {
         $_SESSION['__flash'][$key] = $value;
     }
 
-    public static function flashRemove(): void
+    public function flashRemove(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'GET' && self::has('__flash')) {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET' && $this->has('__flash'))
             unset($_SESSION['__flash']);
-        }
     }
 
-    public static function getFlash(): mixed
+    public function getFlash(string $key = null): mixed
     {
-        return self::get('__flash');
+        if ($key != null)
+            return $this->get('__flash')[$key] ?? null;
+
+        return $this->get('__flash') ?? null;
     }
 
 }
