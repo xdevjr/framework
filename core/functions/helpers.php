@@ -11,9 +11,14 @@ function request(): Request
     return Request::all();
 }
 
-function response(mixed $body, int $statusCode = 200, array $headers = []): Response
+function response(mixed $body, bool $json = false, int $statusCode = 200, array $headers = []): mixed
 {
-    return new Response($body, $statusCode, $headers);
+    return (new Response($body, $statusCode, $headers))->send($json);
+}
+
+function redirect(string $url, int $statusCode = 200): void
+{
+    return (new Response(null, $statusCode))->redirect($url);
 }
 
 function url(?string $name = null, $parameters = null, ?array $getParams = null): Url

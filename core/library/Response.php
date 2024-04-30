@@ -30,11 +30,8 @@ class Response
         return $json ? json_encode($this->body) : $this->body;
     }
 
-    public function redirect(string $url, bool $json = false): void
+    public function redirect(string $url): void
     {
-        if (!empty($this->body))
-            $_SESSION['data'] = $json ? json_encode($this->body) : $this->body;
-
         header("Location: $url", true, $this->statusCode);
     }
 
