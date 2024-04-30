@@ -2,8 +2,6 @@
 
 namespace app\controllers;
 
-use core\library\Paginator;
-
 class HomeController
 {
     public function index(int $page = 1)

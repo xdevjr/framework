@@ -36,7 +36,7 @@ class Paginator
         return (int) ceil($this->totalItems / $this->itemsPerPage);
     }
 
-    public function setClasses(string $ul, string $li, string $a, string $active)
+    public function setClasses(string $ul, string $li, string $a, string $active): void
     {
         $this->classes = [
             "ul" => $ul,

@@ -26,7 +26,7 @@ function view(string $view, array $data = []): void
     $loader = new \Twig\Loader\FilesystemLoader(dirname(__DIR__, 2) . '/app/views');
     $twig = new \Twig\Environment($loader);
 
-    echo $twig->render("$view.twig", $data);
+    echo $twig->render("$view.twig.php", $data);
 }
 
 function session(): Session
@@ -36,4 +36,13 @@ function session(): Session
 function paginator(int $currentPage, int $itemsPerPage, int $totalItems, string $link, int $maxLinksPerPage = 5): Paginator
 {
     return new Paginator($currentPage, $itemsPerPage, $totalItems, $link, $maxLinksPerPage);
+}
+
+function root(string $path = null): string
+{
+    $root = dirname(__DIR__, 2);
+    if ($path != null)
+        $root .= $path;
+
+    return $root;
 }

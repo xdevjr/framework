@@ -1,4 +1,4 @@
-{% extends "master.twig" %}
+{% extends "master.twig.php" %}
 {% block content %}
   <h1>
     {% for num in arr %}
