@@ -27,7 +27,7 @@ class Route
 
             $search = "/{:?$key}";
             if (str_contains($this->uri, $search))
-                $this->uri = str_replace($search, "(/)?($value)*", $this->uri);
+                $this->uri = str_replace($search, "(/)?($value)?", $this->uri);
         }
     }
 

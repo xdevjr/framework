@@ -14,6 +14,6 @@ require ("../vendor/autoload.php");
 
 $router = new Router("app\\controllers\\");
 
-$router->match("get", "/{:?num}", "HomeController@index");
+$router->get("/{:?num}", "HomeController@index");
 
 $router->start();

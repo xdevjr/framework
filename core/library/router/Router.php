@@ -9,8 +9,7 @@ class Router
 
     public function __construct(
         public string $defaultNamespace
-    )
-    {
+    ) {
     }
 
     private function getCurrentUri(): string
@@ -26,10 +25,10 @@ class Router
     public function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = [])
     {
         if (is_string($methods)) {
-            $this->routes[$methods][] = new Route($uri, $callback, $routeOptions);
+            $this->routes[strtolower($methods)][] = new Route($uri, $callback, $routeOptions);
         } else if (is_array($methods)) {
             foreach ($methods as $method) {
-                $this->routes[$method][] = new Route($uri, $callback, $routeOptions);
+                $this->routes[strtolower($method)][] = new Route($uri, $callback, $routeOptions);
             }
         }
     }
@@ -58,5 +57,30 @@ class Router
     {
         if ($this->find())
             $this->execute($this->find());
+    }
+
+    public function get(string $uri, \Closure|string $callback, array $routeOptions = [])
+    {
+        $this->match('get', $uri, $callback, $routeOptions);
+    }
+
+    public function post(string $uri, \Closure|string $callback, array $routeOptions = [])
+    {
+        $this->match('post', $uri, $callback, $routeOptions);
+    }
+
+    public function put(string $uri, \Closure|string $callback, array $routeOptions = [])
+    {
+        $this->match('put', $uri, $callback, $routeOptions);
+    }
+    
+    public function patch(string $uri, \Closure|string $callback, array $routeOptions = [])
+    {
+        $this->match('patch', $uri, $callback, $routeOptions);
+    }
+
+    public function delete(string $uri, \Closure|string $callback, array $routeOptions = [])
+    {
+        $this->match('delete', $uri, $callback, $routeOptions);
     }
 }
