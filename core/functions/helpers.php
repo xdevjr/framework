@@ -18,7 +18,7 @@ function response(mixed $body, bool $json = false, int $statusCode = 200, array 
 
 function redirect(string $url, int $statusCode = 200): void
 {
-    return (new Response(null, $statusCode))->redirect($url);
+    (new Response(null, $statusCode))->redirect($url);
 }
 
 function url(?string $name = null, $parameters = null, ?array $getParams = null): Url
