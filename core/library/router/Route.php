@@ -5,6 +5,7 @@ namespace core\library\router;
 class Route
 {
     private ?string $routeName = null;
+    public string $path;
 
     public function __construct(
         public string $uri,
@@ -12,6 +13,8 @@ class Route
         public array $routeOptions,
         public array $wildcards
     ) {
+        $this->path = $this->uri;
+        $this->filterRouteOptions();
         $this->parseRoute();
     }
 
@@ -42,16 +45,28 @@ class Route
     public function getAction(string $defaultNamespace): array|\Closure
     {
         if (is_string($this->callback)) {
-            $controllerMethod = explode('@', $this->callback);
-            $controllerMethod[0] = $defaultNamespace . $controllerMethod[0];
+            [$controller, $method] = explode('@', $this->callback);
+            $controller = $defaultNamespace . $controller;
+
+            if (!class_exists($controller) || !method_exists($controller, $method))
+                throw new \Exception( "O controller {$controller} ou método {$method} não foram encontrados!");
 
             return [
-                new $controllerMethod[0],
-                $controllerMethod[1]
+                new $controller,
+                $method
             ];
         }
 
         return $this->callback;
+    }
+
+    private function filterRouteOptions(): void
+    {
+        $validOptions = ["parameters", "prefix", "name"];
+        
+        foreach ($this->routeOptions as $option => $value)
+            if (!in_array($option, $validOptions))
+                throw new \Exception("Erro opção {$option} não é valida!");
     }
 
     public function getOption(string $option): mixed
@@ -62,5 +77,10 @@ class Route
     public function name(string $name): void
     {
         $this->routeName = $name;
+    }
+
+    public function getName(): string
+    {
+        return $this->routeName;
     }
 }

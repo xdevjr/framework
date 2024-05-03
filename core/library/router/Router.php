@@ -4,7 +4,7 @@ namespace core\library\router;
 
 class Router
 {
-    private array $routes = [];
+    private static array $routes = [];
     private ?array $params = null;
     private RouteWildcard $wildcards;
 
@@ -21,25 +21,56 @@ class Router
 
     private function getCurrentRequestMethod(): string
     {
-        return strtolower($_SERVER['REQUEST_METHOD']);
+        return strtolower($_POST["_method"] ?? $_SERVER['REQUEST_METHOD']);
     }
 
-    public function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = [])
+    public static function getUrl(string $name, array $parameters = []): ?string
     {
-        if (is_string($methods)) {
-            return $this->routes[strtolower($methods)][] = new Route($uri, $callback, $routeOptions, $this->wildcards->get());
-        } else if (is_array($methods)) {
-            foreach ($methods as $method) {
-                $this->routes[strtolower($method)][] = new Route($uri, $callback, $routeOptions, $this->wildcards->get());
+        $routeFound = null;
+        foreach (self::$routes as $routes) {
+            foreach ($routes as $route) {
+                if ($route->getName() === $name)
+                    $routeFound = $route;
             }
         }
-        return;
+
+        if ($routeFound) {
+            $explodePath = explode('/', $routeFound->path);
+            $explodeUri = explode('/', $routeFound->uri);
+
+            $diff = array_diff($explodeUri, $explodePath);
+            if (count($diff) == count($parameters)) {
+                for ($i = 0; $i < count($parameters); $i++){       
+                    if(preg_match('/'.ltrim($explodeUri[array_keys($diff)[$i]], '?').'/', $parameters[$i]))      
+                        $explodeUri[array_keys($diff)[$i]] = $parameters[$i];
+                    else
+                        throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');                    
+                }
+            }else{
+                throw new \Exception('A quantidade de parâmetros deve ser: '.count($diff).', você passou: '. count($parameters).'!');
+            }
+
+            $url = implode('/', $explodeUri);
+            return $url;
+        }
     }
 
-    private function find()
+    public function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = []): ?Route
     {
-        foreach ($this->routes[$this->getCurrentRequestMethod()] as $route) {
-            if (preg_match($route->getRegex(), $this->getCurrentUri(), $match)) {
+        if (is_string($methods)) {
+            return self::$routes[strtolower($methods)][] = new Route($uri, $callback, $routeOptions, $this->wildcards->get());
+        } else if (is_array($methods)) {
+            foreach ($methods as $method) {
+                self::$routes[strtolower($method)][] = new Route($uri, $callback, $routeOptions, $this->wildcards->get());
+            }
+        }
+        return null;
+    }
+
+    private function find(): Route|bool
+    {
+        foreach (self::$routes[$this->getCurrentRequestMethod()] as $route) {
+            if (preg_match($route->getRegex(), $this->getCurrentUri())) {
                 $explodeRoute = explode('/', ltrim(str_replace('(', '', $route->uri), '/'));
                 $explodeCurrentUri = explode('/', ltrim($this->getCurrentUri(), '/'));
                 $this->params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
@@ -51,7 +82,7 @@ class Router
         return false;
     }
 
-    private function execute(Route $route)
+    private function execute(Route $route): void
     {
         if ($route->getOption('parameters')) {
             call_user_func($route->getAction($this->defaultNamespace), ...[...$route->getOption('parameters'), ...$this->params]);
@@ -61,41 +92,43 @@ class Router
         call_user_func($route->getAction($this->defaultNamespace), ...$this->params);
     }
 
-    public function start()
+    public function start(): void
     {
-        if ($this->find())
-            $this->execute($this->find());
+        if (!$this->find())
+            throw new \Exception("Rota não encontrada!");
+
+        $this->execute($this->find());
 
         dump($this);
     }
 
-    public function addWildcards(array $wildcards)
+    public function addWildcards(array $wildcards): void
     {
         foreach ($wildcards as $key => $value)
             $this->wildcards->add($key, $value);
     }
 
-    public function get(string $uri, \Closure|string $callback, array $routeOptions = [])
+    public function get(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
         return $this->match('get', $uri, $callback, $routeOptions);
     }
 
-    public function post(string $uri, \Closure|string $callback, array $routeOptions = [])
+    public function post(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
         return $this->match('post', $uri, $callback, $routeOptions);
     }
 
-    public function put(string $uri, \Closure|string $callback, array $routeOptions = [])
+    public function put(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
         return $this->match('put', $uri, $callback, $routeOptions);
     }
 
-    public function patch(string $uri, \Closure|string $callback, array $routeOptions = [])
+    public function patch(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
         return $this->match('patch', $uri, $callback, $routeOptions);
     }
 
-    public function delete(string $uri, \Closure|string $callback, array $routeOptions = [])
+    public function delete(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
         return $this->match('delete', $uri, $callback, $routeOptions);
     }

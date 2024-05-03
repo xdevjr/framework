@@ -3,14 +3,14 @@ session_start();
 
 use core\library\router\Router;
 
-// use Pecee\SimpleRouter\SimpleRouter as Router;
+// use Pecee\SimpleRouter\SimpleRouter as Route;
 
 require ("../vendor/autoload.php");
 
-// Router::setDefaultNamespace("app\\controllers");
-// Router::get("/{page?}", "HomeController@index");
+// Route::setDefaultNamespace("app\\controllers");
+// Route::get("/{page?}", "HomeController@index");
 
-// Router::start();
+// Route::start();
 
 $router = new Router("app\\controllers\\");
 
