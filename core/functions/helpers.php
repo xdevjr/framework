@@ -1,9 +1,11 @@
 <?php
 use Pecee\Http\Url;
+use Twig\Environment;
 use core\library\Request;
 use core\library\Session;
 use core\library\Response;
 use core\library\Paginator;
+use Twig\Loader\FilesystemLoader;
 use Pecee\SimpleRouter\SimpleRouter as Router;
 
 function request(): Request
@@ -28,8 +30,8 @@ function url(?string $name = null, $parameters = null, ?array $getParams = null)
 
 function view(string $view, array $data = []): void
 {
-    $loader = new \Twig\Loader\FilesystemLoader(dirname(__DIR__, 2) . '/app/views');
-    $twig = new \Twig\Environment($loader);
+    $loader = new FilesystemLoader(dirname(__DIR__, 2) . '/app/views');
+    $twig = new Environment($loader);
 
     echo $twig->render("$view.twig.php", $data);
 }
