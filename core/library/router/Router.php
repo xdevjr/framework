@@ -70,6 +70,7 @@ class Router
                 $this->routeOptions[$key] = $value;
             }
         }
+
         if (is_string($methods)) {
             return self::$routes[strtolower($methods)][] = new Route($uri, $callback, $this->routeOptions, $this->wildcards->get());
         } else if (is_array($methods)) {

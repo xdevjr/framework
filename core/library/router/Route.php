@@ -34,7 +34,7 @@ class Route
             $this->uri = "/" . trim($this->getOption("prefix"), "/") . $this->uri;
 
         if ($this->getOption("name"))
-            $this->routeName = $this->getOption("name");
+            $this->routeName = $this->getOption("groupName") ? $this->getOption("groupName") . "." . $this->getOption("name") : $this->getOption("name");
     }
 
     public function getRegex(): string
@@ -49,7 +49,7 @@ class Route
             $controller = $defaultNamespace . $controller;
 
             if (!class_exists($controller) || !method_exists($controller, $method))
-                throw new \Exception( "O controller {$controller} ou método {$method} não foram encontrados!");
+                throw new \Exception("O controller {$controller} ou método {$method} não foram encontrados!");
 
             return [
                 new $controller,
@@ -62,8 +62,8 @@ class Route
 
     private function filterRouteOptions(): void
     {
-        $validOptions = ["parameters", "prefix", "name"];
-        
+        $validOptions = ["parameters", "prefix", "name", "groupName"];
+
         foreach ($this->routeOptions as $option => $value)
             if (!in_array($option, $validOptions))
                 throw new \Exception("Erro opção {$option} não é valida!");
@@ -76,7 +76,7 @@ class Route
 
     public function name(string $name): void
     {
-        $this->routeName = $name;
+        $this->routeName = $this->getOption("groupName") ? $this->getOption("groupName") . "." . $name : $name;
     }
 
     public function getName(): string

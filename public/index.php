@@ -16,13 +16,13 @@ $router = new Router("app\\controllers\\");
 
 $router->get("/{:?num}", "HomeController@index")->name("home");
 
-$router->group(["prefix" => "/admin"], function ($router) {
+$router->group(["prefix" => "/admin", "groupName" => "admin"], function ($router) {
     $router->get("/", function () {
         echo "home admin";
-    })->name("admin");
+    }, ["name"=> "home"]);
     $router->get("/user", function () {
         echo "user admin";
-    })->name("user.admin");
+    })->name("user");
 });
 
 $router->get("/teste", function () {
