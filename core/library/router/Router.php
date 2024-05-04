@@ -6,6 +6,7 @@ class Router
 {
     private static array $routes = [];
     private ?array $params = null;
+    private array $routeOptions = [];
     private RouteWildcard $wildcards;
 
     public function __construct(
@@ -16,7 +17,7 @@ class Router
 
     private function getCurrentUri(): string
     {
-        return parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        return $_SERVER['REQUEST_URI'] !== "/" ? rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), "/") : "/";
     }
 
     private function getCurrentRequestMethod(): string
@@ -40,14 +41,14 @@ class Router
 
             $diff = array_diff($explodeUri, $explodePath);
             if (count($diff) == count($parameters)) {
-                for ($i = 0; $i < count($parameters); $i++){       
-                    if(preg_match('/'.ltrim($explodeUri[array_keys($diff)[$i]], '?').'/', $parameters[$i]))      
+                for ($i = 0; $i < count($parameters); $i++) {
+                    if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i]))
                         $explodeUri[array_keys($diff)[$i]] = $parameters[$i];
                     else
-                        throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');                    
+                        throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');
                 }
-            }else{
-                throw new \Exception('A quantidade de parâmetros deve ser: '.count($diff).', você passou: '. count($parameters).'!');
+            } else {
+                throw new \Exception('A quantidade de parâmetros deve ser: ' . count($diff) . ', você passou: ' . count($parameters) . '!');
             }
 
             $url = implode('/', $explodeUri);
@@ -55,13 +56,25 @@ class Router
         }
     }
 
+    public function group(array $groupOptions, \Closure $callback)
+    {
+        $this->routeOptions = $groupOptions;
+        call_user_func($callback, $this);
+        $this->routeOptions = [];
+    }
+
     public function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = []): ?Route
     {
+        foreach ($routeOptions as $key => $value) {
+            if (!in_array($key, array_keys($this->routeOptions))) {
+                $this->routeOptions[$key] = $value;
+            }
+        }
         if (is_string($methods)) {
-            return self::$routes[strtolower($methods)][] = new Route($uri, $callback, $routeOptions, $this->wildcards->get());
+            return self::$routes[strtolower($methods)][] = new Route($uri, $callback, $this->routeOptions, $this->wildcards->get());
         } else if (is_array($methods)) {
             foreach ($methods as $method) {
-                self::$routes[strtolower($method)][] = new Route($uri, $callback, $routeOptions, $this->wildcards->get());
+                self::$routes[strtolower($method)][] = new Route($uri, $callback, $this->routeOptions, $this->wildcards->get());
             }
         }
         return null;
@@ -99,7 +112,7 @@ class Router
 
         $this->execute($this->find());
 
-        dump($this);
+        dump($this, [...self::$routes, "currentUri" => $this->getCurrentUri()]);
     }
 
     public function addWildcards(array $wildcards): void

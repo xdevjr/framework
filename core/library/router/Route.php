@@ -31,7 +31,7 @@ class Route
         }
 
         if ($this->getOption("prefix"))
-            $this->uri = "/" . trim($this->getOption("prefix"), "/") . "/?" . $this->uri;
+            $this->uri = "/" . trim($this->getOption("prefix"), "/") . $this->uri;
 
         if ($this->getOption("name"))
             $this->routeName = $this->getOption("name");
@@ -39,7 +39,7 @@ class Route
 
     public function getRegex(): string
     {
-        return '/^' . str_replace('/', '\/', $this->uri) . '$/';
+        return '/^' . str_replace('/', '\/', rtrim($this->uri, "/")) . '$/';
     }
 
     public function getAction(string $defaultNamespace): array|\Closure
