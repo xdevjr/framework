@@ -36,8 +36,8 @@ class Router
         }
 
         if ($routeFound) {
-            $explodePath = explode('/', $routeFound->path);
-            $explodeUri = explode('/', $routeFound->uri);
+            $explodePath = explode('/', $routeFound->getPath());
+            $explodeUri = explode('/', $routeFound->getUri());
 
             $diff = array_diff($explodeUri, $explodePath);
             if (count($diff) == count($parameters)) {
@@ -81,7 +81,7 @@ class Router
     {
         foreach (self::$routes[$this->getCurrentRequestMethod()] as $route) {
             if (preg_match($route->getRegex(), $this->getCurrentUri())) {
-                $explodeRoute = explode('/', ltrim(str_replace('(', '', $route->uri), '/'));
+                $explodeRoute = explode('/', ltrim(str_replace('(', '', $route->getUri()), '/'));
                 $explodeCurrentUri = explode('/', ltrim($this->getCurrentUri(), '/'));
                 $this->params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
 
@@ -94,6 +94,8 @@ class Router
 
     private function execute(Route $route): void
     {
+        $route->executeMiddlewares();
+
         if ($route->getOption('parameters')) {
             call_user_func($route->getAction($this->defaultNamespace), ...[...$route->getOption('parameters'), ...$this->params]);
             return;

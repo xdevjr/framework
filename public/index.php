@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+use app\middlewares\Auth;
+use app\middlewares\Teste;
 use core\library\router\Router;
 
 // use Pecee\SimpleRouter\SimpleRouter as Route;
@@ -14,15 +16,15 @@ require ("../vendor/autoload.php");
 
 $router = new Router("app\\controllers\\");
 
-$router->get("/{:?num}", "HomeController@index")->name("home");
+$router->get("/{:?num}", "HomeController@index")->name("home")->middlewares([Auth::class]);
 
-$router->group(["prefix" => "/admin", "groupName" => "admin"], function ($router) {
+$router->group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function ($router) {
     $router->get("/", function () {
         echo "home admin";
-    }, ["name"=> "home"]);
+    }, ["name" => "home"]);
     $router->get("/user", function () {
         echo "user admin";
-    })->name("user");
+    })->name("user")->middlewares([Teste::class]);
 });
 
 $router->get("/teste", function () {
