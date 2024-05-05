@@ -65,11 +65,7 @@ class Router
 
     public function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = []): ?Route
     {
-        foreach ($routeOptions as $key => $value) {
-            if (!in_array($key, array_keys($this->routeOptions))) {
-                $this->routeOptions[$key] = $value;
-            }
-        }
+        $this->routeOptions = array_merge($this->routeOptions, $routeOptions);
 
         if (is_string($methods)) {
             return self::$routes[strtolower($methods)][] = new Route($uri, $callback, $this->routeOptions, $this->wildcards->get());
