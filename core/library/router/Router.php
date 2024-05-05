@@ -25,35 +25,38 @@ class Router
         return strtolower($_POST["_method"] ?? $_SERVER['REQUEST_METHOD']);
     }
 
-    public static function getUrl(string $name, array $parameters = []): ?string
+    public static function getUrl(string $name, array $parameters = [], array $getParameters = []): string
     {
         $routeFound = null;
         foreach (self::$routes as $route) {
             if ($route->getName() === $name)
                 $routeFound = $route;
         }
+        
+        $getParametersString = !empty($getParameters) ? "?".http_build_query($getParameters) : "";
+        $parametersString = !empty($parameters) ? "/".implode("/", $parameters) : "";
 
         if ($routeFound) {
             $explodePath = explode('/', $routeFound->getPath());
             $explodeUri = explode('/', $routeFound->getUri());
 
             $diff = array_diff($explodeUri, $explodePath);
-            if (!empty($parameters)) {
-                if (count($diff) == count($parameters)) {
-                    for ($i = 0; $i < count($parameters); $i++) {
-                        if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i]))
-                            $explodeUri[array_keys($diff)[$i]] = $parameters[$i];
-                        else
-                            throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');
-                    }
-                } else {
-                    throw new \Exception('A quantidade de parâmetros deve ser: ' . count($diff) . ', você passou: ' . count($parameters) . '!');
+            if (count($diff) == count($parameters)) {
+                for ($i = 0; $i < count($parameters); $i++) {
+                    if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i]))
+                        $explodePath[array_keys($diff)[$i]] = $parameters[$i];
+                    else
+                        throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');
                 }
+            } else {
+                throw new \Exception('A quantidade de parâmetros deve ser: ' . count($diff) . ', você passou: ' . count($parameters) . '!');
             }
 
-            $url = implode('/', $explodeUri);
-            return $url;
+            $url = implode('/', $explodePath);
+            return $url.$getParameters;
         }
+
+        return $name.$parametersString.$getParametersString;
     }
 
     public function group(array $groupOptions, \Closure $callback)
