@@ -18,7 +18,7 @@ $router = new Router("app\\controllers\\");
 
 $router->get("/{:?num}", "HomeController@index")->name("home")->middlewares([Auth::class]);
 
-$router->group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function ($router) {
+$router->group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function (Router $router) {
     $router->get("/", function () {
         echo "home admin";
     }, ["name" => "home"]);

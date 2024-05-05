@@ -28,11 +28,9 @@ class Router
     public static function getUrl(string $name, array $parameters = []): ?string
     {
         $routeFound = null;
-        foreach (self::$routes as $routes) {
-            foreach ($routes as $route) {
-                if ($route->getName() === $name)
-                    $routeFound = $route;
-            }
+        foreach (self::$routes as $route) {
+            if ($route->getName() === $name)
+                $routeFound = $route;
         }
 
         if ($routeFound) {
@@ -40,15 +38,17 @@ class Router
             $explodeUri = explode('/', $routeFound->getUri());
 
             $diff = array_diff($explodeUri, $explodePath);
-            if (count($diff) == count($parameters)) {
-                for ($i = 0; $i < count($parameters); $i++) {
-                    if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i]))
-                        $explodeUri[array_keys($diff)[$i]] = $parameters[$i];
-                    else
-                        throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');
+            if (!empty($parameters)) {
+                if (count($diff) == count($parameters)) {
+                    for ($i = 0; $i < count($parameters); $i++) {
+                        if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i]))
+                            $explodeUri[array_keys($diff)[$i]] = $parameters[$i];
+                        else
+                            throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');
+                    }
+                } else {
+                    throw new \Exception('A quantidade de parâmetros deve ser: ' . count($diff) . ', você passou: ' . count($parameters) . '!');
                 }
-            } else {
-                throw new \Exception('A quantidade de parâmetros deve ser: ' . count($diff) . ', você passou: ' . count($parameters) . '!');
             }
 
             $url = implode('/', $explodeUri);
@@ -68,28 +68,32 @@ class Router
         $this->routeOptions = array_merge($this->routeOptions, $routeOptions);
 
         if (is_string($methods)) {
-            return self::$routes[strtolower($methods)][] = new Route($uri, $callback, $this->routeOptions, $this->wildcards->get());
+            return self::$routes[] = new Route($methods, $uri, $callback, $this->routeOptions, $this->wildcards->get());
         } else if (is_array($methods)) {
             foreach ($methods as $method) {
-                self::$routes[strtolower($method)][] = new Route($uri, $callback, $this->routeOptions, $this->wildcards->get());
+                self::$routes[] = new Route($method, $uri, $callback, $this->routeOptions, $this->wildcards->get());
             }
         }
         return null;
     }
 
-    private function find(): Route|bool
+    private function find(): Route
     {
-        foreach (self::$routes[$this->getCurrentRequestMethod()] as $route) {
+        foreach (self::$routes as $route) {
             if (preg_match($route->getRegex(), $this->getCurrentUri())) {
-                $explodeRoute = explode('/', ltrim(str_replace('(', '', $route->getUri()), '/'));
-                $explodeCurrentUri = explode('/', ltrim($this->getCurrentUri(), '/'));
-                $this->params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
+                if ($route->getMethod() === $this->getCurrentRequestMethod()) {
+                    $explodeRoute = explode('/', ltrim(str_replace('(', '', $route->getUri()), '/'));
+                    $explodeCurrentUri = explode('/', ltrim($this->getCurrentUri(), '/'));
+                    $this->params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
 
-                return $route;
+                    return $route;
+                }
+
+                throw new \Exception("Método não disponível para essa rota!", 405);
             }
         }
 
-        return false;
+        throw new \Exception("Rota não encontrada!", 404);
     }
 
     private function execute(Route $route): void
@@ -104,12 +108,17 @@ class Router
         call_user_func($route->getAction($this->defaultNamespace), ...$this->params);
     }
 
-    public function start(): void
+    public function start(\Closure $errors = null): void
     {
-        if (!$this->find())
-            throw new \Exception("Rota não encontrada!");
-
-        $this->execute($this->find());
+        try {
+            $this->execute($this->find());
+        } catch (\Exception $e) {
+            if ($errors)
+                call_user_func($errors, $e);
+            else
+                echo $e->getMessage();
+            exit;
+        }
 
         dump($this, [...self::$routes, "currentUri" => $this->getCurrentUri()]);
     }

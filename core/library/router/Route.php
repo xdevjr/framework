@@ -10,6 +10,7 @@ class Route
     private string $path;
 
     public function __construct(
+        private string $method,
         private string $uri,
         private \Closure|string $callback,
         private array $routeOptions,
@@ -28,6 +29,11 @@ class Route
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    public function getMethod(): string
+    {
+        return $this->method;
     }
 
     private function parseRoute(): void
@@ -61,7 +67,7 @@ class Route
             $controller = $defaultNamespace . $controller;
 
             if (!class_exists($controller) || !method_exists($controller, $method))
-                throw new \Exception("O controller {$controller} ou método {$method} não foram encontrados!");
+                throw new \Exception("O controller {$controller} ou método {$method} não foram encontrados!", 501);
 
             return [
                 new $controller,
@@ -86,10 +92,10 @@ class Route
         if ($middlewares = $this->getOption("middlewares")) {
             foreach ($middlewares as $middleware) {
                 if (!class_exists($middleware))
-                    throw new \Exception("O middleware {$middleware} não foi encontrado!");
+                    throw new \Exception("O middleware {$middleware} não foi encontrado!", 501);
 
                 if (!new $middleware instanceof MiddlewareInterface)
-                    throw new \Exception("O middleware {$middleware} deve implementar o " . MiddlewareInterface::class);
+                    throw new \Exception("O middleware {$middleware} deve implementar o " . MiddlewareInterface::class, 501);
 
                 call_user_func([new $middleware, "execute"]);
             }
