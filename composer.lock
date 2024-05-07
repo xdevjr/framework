@@ -4,71 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f44a72cc6f0d0cef0b172a7aeb6d60af",
+    "content-hash": "0f16ddd3bc07ad9be27780c2fe400764",
     "packages": [
-        {
-            "name": "pecee/simple-router",
-            "version": "5.4.1.7",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/skipperbent/simple-php-router.git",
-                "reference": "a2843d5b1e037f8b61cc99f27eab52a28bf41dfd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/skipperbent/simple-php-router/zipball/a2843d5b1e037f8b61cc99f27eab52a28bf41dfd",
-                "reference": "a2843d5b1e037f8b61cc99f27eab52a28bf41dfd",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "php": ">=7.4"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1",
-                "phpstan/phpstan": "^1",
-                "phpstan/phpstan-deprecation-rules": "^1",
-                "phpstan/phpstan-phpunit": "^1",
-                "phpstan/phpstan-strict-rules": "^1",
-                "phpunit/phpunit": "^8"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Pecee\\": "src/Pecee/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Simon Sessingø",
-                    "email": "simon.sessingoe@gmail.com"
-                }
-            ],
-            "description": "Simple, fast PHP router that is easy to get integrated and in almost any project. Heavily inspired by the Laravel router.",
-            "keywords": [
-                "framework",
-                "input-handler",
-                "laravel",
-                "pecee",
-                "php",
-                "request-handler",
-                "route",
-                "router",
-                "routing",
-                "routing-engine",
-                "simple-php-router",
-                "url-handling"
-            ],
-            "support": {
-                "issues": "https://github.com/skipperbent/simple-php-router/issues",
-                "source": "https://github.com/skipperbent/simple-php-router/issues"
-            },
-            "time": "2023-12-11T21:48:25+00:00"
-        },
         {
             "name": "rakit/validation",
             "version": "v1.4.0",
@@ -117,16 +54,16 @@
         },
         {
             "name": "symfony/deprecation-contracts",
-            "version": "v3.4.0",
+            "version": "v3.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
-                "reference": "7c3aff79d10325257a001fcf92d991f24fc967cf"
+                "reference": "0e0d29ce1f20deffb4ab1b016a7257c4f1e789a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/7c3aff79d10325257a001fcf92d991f24fc967cf",
-                "reference": "7c3aff79d10325257a001fcf92d991f24fc967cf",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/0e0d29ce1f20deffb4ab1b016a7257c4f1e789a1",
+                "reference": "0e0d29ce1f20deffb4ab1b016a7257c4f1e789a1",
                 "shasum": ""
             },
             "require": {
@@ -135,7 +72,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "3.4-dev"
+                    "dev-main": "3.5-dev"
                 },
                 "thanks": {
                     "name": "symfony/contracts",
@@ -164,7 +101,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.4.0"
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.5.0"
             },
             "funding": [
                 {
@@ -180,7 +117,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-23T14:45:45+00:00"
+            "time": "2024-04-18T09:32:20+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
