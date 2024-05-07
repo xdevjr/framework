@@ -34,7 +34,7 @@ class Validate
 
     private function addMessage(string $field, string $value)
     {
-        $this->messages[$field][] = $value;
+        $this->messages[$field] = $value;
     }
 
     private function getRules(): array
