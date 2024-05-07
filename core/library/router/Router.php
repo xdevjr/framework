@@ -72,10 +72,10 @@ class Router
         $this->routeOptions = array_merge($this->routeOptions, $routeOptions);
 
         if (is_string($methods)) {
-            return self::$routes[] = new Route($methods, $uri, $callback, $this->routeOptions, $this->wildcards->get());
+            return self::$routes[] = new Route(strtolower($methods), $uri, $callback, $this->routeOptions, $this->wildcards->get());
         } else if (is_array($methods)) {
             foreach ($methods as $method) {
-                self::$routes[] = new Route($method, $uri, $callback, $this->routeOptions, $this->wildcards->get());
+                self::$routes[] = new Route(strtolower($method), $uri, $callback, $this->routeOptions, $this->wildcards->get());
             }
         }
         return null;
@@ -124,7 +124,7 @@ class Router
             exit;
         }
 
-        dump(["params" => $this->params, ...self::$routes, "currentUri" => $this->getCurrentUri()]);
+        dump(["params" => $this->params, ...self::$routes, "currentUri" => $this->getCurrentUri(), "currentRequestMethod" => $this->getCurrentRequestMethod()]);
     }
 
     public function addWildcards(array $wildcards): void
