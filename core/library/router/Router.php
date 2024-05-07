@@ -124,7 +124,7 @@ class Router
             exit;
         }
 
-        dump(["params" => $this->params, ...self::$routes, "currentUri" => $this->getCurrentUri(), "currentRequestMethod" => $this->getCurrentRequestMethod()]);
+        //dump(["params" => $this->params, ...self::$routes, "currentUri" => $this->getCurrentUri(), "currentRequestMethod" => $this->getCurrentRequestMethod()]);
     }
 
     public function addWildcards(array $wildcards): void
