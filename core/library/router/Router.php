@@ -32,9 +32,9 @@ class Router
             if ($route->getName() === $name)
                 $routeFound = $route;
         }
-        
-        $getParametersString = !empty($getParameters) ? "?".http_build_query($getParameters) : "";
-        $parametersString = !empty($parameters) ? "/".implode("/", $parameters) : "";
+
+        $getParametersString = !empty($getParameters) ? "?" . http_build_query($getParameters) : "";
+        $parametersString = !empty($parameters) ? "/" . implode("/", $parameters) : "";
 
         if ($routeFound) {
             $explodePath = explode('/', $routeFound->getPath());
@@ -53,10 +53,10 @@ class Router
             }
 
             $url = implode('/', $explodePath);
-            return $url.$getParameters;
+            return $url . $getParameters;
         }
 
-        return $name.$parametersString.$getParametersString;
+        return $name . $parametersString . $getParametersString;
     }
 
     public function group(array $groupOptions, \Closure $callback)
@@ -68,6 +68,7 @@ class Router
 
     public function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = []): ?Route
     {
+        $this->routeOptions["defaultNamespace"] = $this->defaultNamespace;
         $this->routeOptions = array_merge($this->routeOptions, $routeOptions);
 
         if (is_string($methods)) {
@@ -104,11 +105,11 @@ class Router
         $route->executeMiddlewares();
 
         if ($route->getOption('parameters')) {
-            call_user_func($route->getAction($this->defaultNamespace), ...[...$route->getOption('parameters'), ...$this->params]);
+            call_user_func($route->getAction(), ...[...$route->getOption('parameters'), ...$this->params]);
             return;
         }
 
-        call_user_func($route->getAction($this->defaultNamespace), ...$this->params);
+        call_user_func($route->getAction(), ...$this->params);
     }
 
     public function start(\Closure $errors = null): void
@@ -123,7 +124,7 @@ class Router
             exit;
         }
 
-        dump($this, [...self::$routes, "currentUri" => $this->getCurrentUri()]);
+        dump(["params" => $this->params, ...self::$routes, "currentUri" => $this->getCurrentUri()]);
     }
 
     public function addWildcards(array $wildcards): void

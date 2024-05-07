@@ -57,14 +57,14 @@ class Route
 
     public function getRegex(): string
     {
-        return '/^' . str_replace('/', '\/', rtrim($this->uri, "/")) . '$/';
+        return '/^' . str_replace('/', '\/', rtrim($this->getOption("customRegex") ?? $this->uri, "/")) . '$/';
     }
 
-    public function getAction(string $defaultNamespace): array|\Closure
+    public function getAction(): array|\Closure
     {
         if (is_string($this->callback)) {
             [$controller, $method] = explode('@', $this->callback);
-            $controller = $defaultNamespace . $controller;
+            $controller = $this->getNamespace() . $controller;
 
             if (!class_exists($controller) || !method_exists($controller, $method))
                 throw new \Exception("O controller {$controller} ou método {$method} não foram encontrados!", 501);
@@ -80,7 +80,7 @@ class Route
 
     private function filterRouteOptions(): void
     {
-        $validOptions = ["parameters", "prefix", "name", "groupName", "middlewares"];
+        $validOptions = ["parameters", "prefix", "name", "groupName", "middlewares", "namespace", "defaultNamespace", "customRegex"];
 
         foreach ($this->routeOptions as $option => $value)
             if (!in_array($option, $validOptions))
@@ -107,6 +107,16 @@ class Route
         return $this->routeOptions[$option] ?? null;
     }
 
+    public function getName(): string
+    {
+        return $this->routeName;
+    }
+
+    private function getNamespace(): string
+    {
+        return $this->getOption("namespace") ?? $this->getOption("defaultNamespace");
+    }
+
     public function name(string $name): static
     {
         $this->routeName = $this->getOption("groupName") ? $this->getOption("groupName") . "." . $name : $name;
@@ -119,8 +129,16 @@ class Route
         return $this;
     }
 
-    public function getName(): string
+    public function namespace(string $namespace): static
     {
-        return $this->routeName;
+        $this->routeOptions["namespace"] = $namespace;
+        return $this;
     }
+
+    public function customRegex(string $regex): static
+    {
+        $this->routeOptions["customRegex"] = $regex;
+        return $this;
+    }
+
 }
