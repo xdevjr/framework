@@ -14,14 +14,17 @@ class Validate
 
     public function validate(array $data)
     {
-        $allValidations = false;
+        $allValidations = true;
         foreach ($data as $field => $value) {
             foreach ($this->getRules()[$field] as $rule) {
-                $allValidations = $this->$rule($field, $value);
+                if (!$this->$rule($field, $value)) {
+                    $allValidations = false;
+                    break;
+                }
             }
         }
 
-        return true;
+        return $allValidations;
     }
 
     public function getMessages(): array
