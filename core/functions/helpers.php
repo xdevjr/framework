@@ -1,12 +1,11 @@
 <?php
-use Pecee\Http\Url;
 use Twig\Environment;
 use core\library\Request;
 use core\library\Session;
 use core\library\Response;
 use core\library\Paginator;
+use core\library\Validator;
 use Twig\Loader\FilesystemLoader;
-use Pecee\SimpleRouter\SimpleRouter as Router;
 
 function request(): Request
 {
@@ -21,11 +20,6 @@ function response(mixed $body, bool $json = false, int $statusCode = 200, array 
 function redirect(string $url, int $statusCode = 200): void
 {
     (new Response(null, $statusCode))->redirect($url);
-}
-
-function url(?string $name = null, $parameters = null, ?array $getParams = null): Url
-{
-    return Router::getUrl($name, $parameters, $getParams);
 }
 
 function view(string $view, array $data = []): void
@@ -43,6 +37,11 @@ function session(): Session
 function paginator(int $currentPage, int $itemsPerPage, int $totalItems, string $link, int $maxLinksPerPage = 5): Paginator
 {
     return new Paginator($currentPage, $itemsPerPage, $totalItems, $link, $maxLinksPerPage);
+}
+
+function validate(): Validator
+{
+    return new Validator();
 }
 
 function root(string $path = null): string

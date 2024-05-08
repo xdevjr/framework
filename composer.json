@@ -17,8 +17,7 @@
         ]
     },
     "require": {
-        "twig/twig": "^3.9",
-        "rakit/validation": "^1.4"
+        "twig/twig": "^3.9"
     },
     "require-dev": {
         "symfony/var-dumper": "^7.0"
