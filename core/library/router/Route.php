@@ -16,7 +16,7 @@ class Route
         private array $routeOptions,
         private array $wildcards
     ) {
-        $this->path = $this->uri;
+        $this->path = $this->getOption("prefix") ? "/" . trim($this->getOption("prefix"), "/") . $this->uri : $this->uri;
         $this->filterRouteOptions();
         $this->parseRoute();
     }

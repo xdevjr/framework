@@ -43,7 +43,7 @@ class Router
             $diff = array_diff($explodeUri, $explodePath);
             if (count($diff) == count($parameters)) {
                 for ($i = 0; $i < count($parameters); $i++) {
-                    if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i]))
+                    if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i] ?? ""))
                         $explodePath[array_keys($diff)[$i]] = $parameters[$i];
                     else
                         throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');
@@ -53,7 +53,7 @@ class Router
             }
 
             $url = implode('/', $explodePath);
-            return $url . $getParameters;
+            return $url . $getParametersString;
         }
 
         return $name . $parametersString . $getParametersString;
