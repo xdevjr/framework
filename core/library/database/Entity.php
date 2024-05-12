@@ -4,15 +4,26 @@ namespace core\library\database;
 
 abstract class Entity
 {
-    public function getAttributes(){
+    public function getProperties(): array
+    {
         $reflectProperties = (new \ReflectionClass(static::class))->getProperties();
 
-        $attributes = [];
+        $properties = [];
         foreach ($reflectProperties as $property) {
             if ($property->isInitialized($this))
-                $attributes[$property->getName()] = $property->getValue($this);
+                $properties[$property->getName()] = $property->getValue($this);
         }
 
-        return $attributes;
+        return $properties;
+    }
+
+    public function set(array $properties): void
+    {
+        foreach ($properties as $name => $value) {
+            if (property_exists($this, $name))
+                $this->$name = $value;
+            else
+                throw new \Exception("This property \"{$name}\" not exist in " . static::class . "!");
+        }
     }
 }

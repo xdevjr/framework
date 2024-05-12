@@ -20,7 +20,7 @@ DBLayer::setConnection([
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
     ]
 ]);
-DBLayer::setEntityNamespace("app\\database\\entities\\");
+
 $router = new Router("app\\controllers\\");
 
 $router->get("/{:?num}", "HomeController@index")->name("home")->middlewares([Auth::class]);

@@ -56,6 +56,11 @@ class Validator
         return $this->messages;
     }
 
+    public function getFirstMessage(): string
+    {
+        return $this->messages[array_key_first($this->messages)];
+    }
+
     private function addMessage(string $field, string $value, string $validation): void
     {
         $this->messages[$field] = !empty($this->customMessages[$validation]) ? str_replace("{:field}", $field, $this->customMessages[$validation]) : $value;
@@ -95,7 +100,7 @@ class Validator
 
     private function alpha(string $field, string $value): bool
     {
-        if (is_string($value) and ctype_alpha($value))
+        if (is_string($value) and preg_match("/^[A-zÀ-ú]+$/",$value))
             return true;
 
         $this->addMessage($field, "O campo {$field} tem que conter apenas letras sem espaços!", __FUNCTION__);
@@ -129,25 +134,25 @@ class Validator
         return false;
     }
 
-    public function uppercase(string $field, mixed $value): bool
+    private function uppercase(string $field, mixed $value): bool
     {
-        if (is_string($value) and ctype_upper($value))
+        if (is_string($value) and preg_match("/^[A-ZÀ-Û]+$/",$value))
             return true;
 
         $this->addMessage($field, "O campo {$field} precisa ter todas as letras maiúsculas!", __FUNCTION__);
         return false;
     }
 
-    public function lowercase(string $field, mixed $value): bool
+    private function lowercase(string $field, mixed $value): bool
     {
-        if (is_string($value) and ctype_lower($value))
+        if (is_string($value) and preg_match("/^[a-zà-ú]+$/",$value))
             return true;
 
         $this->addMessage($field, "O campo {$field} precisa ter todas as letras minusculas!", __FUNCTION__);
         return false;
     }
 
-    public function json(string $field, mixed $value): bool
+    private function json(string $field, mixed $value): bool
     {
         if (is_string($value) and json_validate($value))
             return true;
@@ -156,7 +161,7 @@ class Validator
         return false;
     }
 
-    public function numeric(string $field, mixed $value): bool
+    private function numeric(string $field, mixed $value): bool
     {
         if (is_numeric($value))
             return true;
@@ -165,34 +170,43 @@ class Validator
         return false;
     }
 
-    public function alphanum(string $field, mixed $value): bool
+    private function alphanum(string $field, mixed $value): bool
     {
-        if (is_string($value) and ctype_alnum($value))
+        if (is_string($value) and preg_match("/^[A-zÀ-ú0-9]+$/",$value))
             return true;
 
         $this->addMessage($field, "O campo {$field} deve conter apenas letras, números e espaços!", __FUNCTION__);
         return false;
     }
 
-    public function alphaspace(string $field, mixed $value): bool
+    private function alphaspace(string $field, mixed $value): bool
     {
-        if (is_string($value) and preg_match("/^[A-z\s]+$/", $value))
+        if (is_string($value) and preg_match("/^[A-zÀ-û\s]+$/", $value))
             return true;
 
         $this->addMessage($field, "O campo {$field} deve conter apenas letras e espaços!", __FUNCTION__);
         return false;
     }
 
-    public function alphadash(string $field, mixed $value): bool
+    private function alphadash(string $field, mixed $value): bool
     {
-        if (is_string($value) and preg_match("/^[A-z\-\_]+$/", $value))
+        if (is_string($value) and preg_match("/^[A-zÀ-û\-\_]+$/", $value))
             return true;
 
         $this->addMessage($field, "O campo {$field} deve conter apenas letras e espaços!", __FUNCTION__);
         return false;
     }
 
-    public function in(string $field, mixed $value, array $params): bool
+    public function alphanumspecial(string $field, mixed $value): bool
+    {
+        if (is_string($value) and preg_match("/^[[:punct:][:alnum:]]+$/", $value))
+            return true;
+
+        $this->addMessage($field, "O campo {$field} deve conter apenas letras, números e caracteres especiais!", __FUNCTION__);
+        return false;
+    }
+
+    private function in(string $field, mixed $value, array $params): bool
     {
         if (in_array($value, $params))
             return true;
@@ -201,7 +215,7 @@ class Validator
         return false;
     }
 
-    public function notin(string $field, mixed $value, array $params): bool
+    private function notin(string $field, mixed $value, array $params): bool
     {
         if (!in_array($value, $params))
             return true;
@@ -210,7 +224,7 @@ class Validator
         return false;
     }
 
-    public function min(string $field, mixed $value, array $params): bool
+    private function min(string $field, mixed $value, array $params): bool
     {
         if ($value >= $params[0])
             return true;
@@ -219,7 +233,7 @@ class Validator
         return false;
     }
 
-    public function max(string $field, mixed $value, array $params): bool
+    private function max(string $field, mixed $value, array $params): bool
     {
         if ($value <= $params[0])
             return true;
@@ -228,7 +242,7 @@ class Validator
         return false;
     }
 
-    public function between(string $field, mixed $value, array $params): bool
+    private function between(string $field, mixed $value, array $params): bool
     {
         if ($value >= $params[0] and $value <= $params[1])
             return true;
@@ -237,7 +251,7 @@ class Validator
         return false;
     }
 
-    public function bool(string $field, mixed $value): bool
+    private function bool(string $field, mixed $value): bool
     {
         if (is_bool($value))
             return true;
@@ -246,7 +260,7 @@ class Validator
         return false;
     }
 
-    public function array(string $field, mixed $value): bool
+    private function array(string $field, mixed $value): bool
     {
         if (is_array($value))
             return true;
@@ -255,7 +269,7 @@ class Validator
         return false;
     }
 
-    public function same(string $field, mixed $value, array $params): bool
+    private function same(string $field, mixed $value, array $params): bool
     {
         if ($value === $params[1])
             return true;
@@ -264,7 +278,7 @@ class Validator
         return false;
     }
 
-    public function different(string $field, mixed $value, array $params): bool
+    private function different(string $field, mixed $value, array $params): bool
     {
         if ($value !== $params[1])
             return true;
@@ -273,7 +287,7 @@ class Validator
         return false;
     }
 
-    public function string(string $field, mixed $value): bool
+    private function string(string $field, mixed $value): bool
     {
         if (is_string($value) and ctype_print($value))
             return true;
@@ -282,7 +296,7 @@ class Validator
         return false;
     }
 
-    public function ip(string $field, mixed $value): bool
+    private function ip(string $field, mixed $value): bool
     {
         if (filter_var($value, FILTER_VALIDATE_IP))
             return true;
@@ -291,7 +305,7 @@ class Validator
         return false;
     }
 
-    public function url(string $field, mixed $value): bool
+    private function url(string $field, mixed $value): bool
     {
         if (filter_var($value, FILTER_VALIDATE_URL))
             return true;
@@ -300,7 +314,7 @@ class Validator
         return false;
     }
 
-    public function regex(string $field, mixed $value, array $params): bool
+    private function regex(string $field, mixed $value, array $params): bool
     {
         if (preg_match("/^{$params[0]}$/", $value))
             return true;

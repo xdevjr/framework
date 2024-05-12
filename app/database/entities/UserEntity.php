@@ -13,4 +13,30 @@ class UserEntity extends Entity
     public string $password;
     public string $created_at;
     public ?string $updated_at;
+
+    public function passwordHash(): void
+    {
+        $this->password = password_hash($this->password, PASSWORD_DEFAULT);
+    }
+
+    public function verifyPassword(string $password)
+    {
+        return password_verify($password, $this->password);
+    }
+
+    public function set(array $properties): void
+    {
+        $validate = validate();
+        $valid = $validate->fromArray($properties, [
+            "firstName"=> "required|alpha",
+            "lastName"=> "required|alpha",
+            "email"=> "required|email",
+            "password"=> "required|alphanumspecial",
+        ]);
+        if (!$valid) {
+            throw new \Exception($validate->getFirstMessage());
+        }
+        parent::set($properties);
+        $this->passwordHash();
+    }
 }

@@ -7,7 +7,7 @@ abstract class DBLayer
 
     protected string $table;
     protected static ?\PDO $connection = null;
-    protected static string $entityNamespace;
+    protected static string $entityNamespace = "app\\database\\entities\\";
 
     public static function setConnection(array $config)
     {
@@ -56,7 +56,7 @@ abstract class DBLayer
 
     public function save(Entity $entity): ?int
     {
-        $attributes = $entity->getAttributes();
+        $attributes = $entity->getProperties();
         $query = "insert into {$this->table} (" . implode(", ", array_keys($attributes)) . ") values (:" . implode(", :", array_keys($attributes)) . ")";
         $stmt = self::$connection->prepare($query);
         if ($stmt->execute($attributes)) {
@@ -66,14 +66,15 @@ abstract class DBLayer
 
     public function update(Entity $entity, string $findValue, string $findBy = "id"): ?int
     {
-        $attributes = $entity->getAttributes();
-        foreach ($attributes as $key => $value) {
+        $properties = $entity->getProperties();
+        foreach ($properties as $key => $value) {
             $placeholders[] = $key . " = :" . $key;
         }
-        $attributes[$findBy] = $this->find($findValue, $findBy)->$findBy;
-        $query = "update {$this->table} set " . implode(", ", $placeholders) . " where {$findBy} = :{$findBy}";
+        $properties[$findBy] = $this->find($findValue, $findBy)->$findBy ?? null;
+        $properties["updated_at"] = date("Y-m-d H:i:s");
+        $query = "update {$this->table} set " . implode(", ", $placeholders) . ", updated_at = :updated_at where {$findBy} = :{$findBy}";
         $stmt = self::$connection->prepare($query);
-        if ($stmt->execute($attributes)) {
+        if ($stmt->execute($properties)) {
             return $stmt->rowCount();
         }
     }
