@@ -11,10 +11,12 @@ abstract class DBLayer
 
     public static function setConnection(array $config)
     {
-        extract($config);
-        $port = isset($port) ? "port={$port}" : "";
+        extract(array_merge(["driver" => "", "host" => "", "dbname" => "", "username" => "", "password" => "", "options" => [], "port" => "", "file" => ""], $config));
+        $port = !empty($port) ? "port={$port}" : "";
+        $host = $driver !== 'sqlite' ? "host={$host};" : $file;
+        $dbname = !empty($dbname) ? "dbname={$dbname};" : "";
         if (!self::$connection) {
-            self::$connection = new \PDO("{$driver}:host={$host};dbname={$dbname};{$port}", $username, $password, $options);
+            self::$connection = new \PDO("{$driver}:{$host}{$dbname}{$port}", $username, $password, $options);
         }
     }
     public static function setEntityNamespace(string $namespace): void
@@ -43,7 +45,7 @@ abstract class DBLayer
         }
     }
 
-    public function find(mixed $value, string $by = "id", string $fields = "*"): ?Entity
+    public function find(string $value, string $by = "id", string $fields = "*"): ?Entity
     {
         $query = "select {$fields} from {$this->table} where {$by} = ?";
         $stmt = self::$connection->prepare($query);
@@ -62,7 +64,7 @@ abstract class DBLayer
         }
     }
 
-    public function update(Entity $entity, mixed $findValue, string $findBy = "id")
+    public function update(Entity $entity, string $findValue, string $findBy = "id"): ?int
     {
         $attributes = $entity->getAttributes();
         foreach ($attributes as $key => $value) {
@@ -76,4 +78,12 @@ abstract class DBLayer
         }
     }
 
+    public function delete(string $value, string $findBy = "id"): ?int
+    {
+        $query = "delete from {$this->table} where {$findBy} = :{$findBy}";
+        $stmt = self::$connection->prepare($query);
+        if ($stmt->execute([$findBy => $value])) {
+            return $stmt->rowCount();
+        }
+    }
 }

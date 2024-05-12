@@ -7,14 +7,11 @@ use app\database\models\User;
 
 class HomeController
 {
-    public function index(int $page = 1)
+    public function index(int $page = 1): void
     {
         $user = new User;
-        $entity = new UserEntity;
-        $entity->password = "123";
-        $entity->updated_at = null;
 
-        dump($user->update($entity, 1));
+        dump($user->all());
     }
 
 }
