@@ -67,12 +67,12 @@ abstract class DBLayer
     public function update(Entity $entity, string $findValue, string $findBy = "id"): ?int
     {
         $properties = $entity->getProperties();
+        $properties["updated_at"] = date("Y-m-d H:i:s");
         foreach ($properties as $key => $value) {
             $placeholders[] = $key . " = :" . $key;
         }
         $properties[$findBy] = $this->find($findValue, $findBy)->$findBy ?? null;
-        $properties["updated_at"] = date("Y-m-d H:i:s");
-        $query = "update {$this->table} set " . implode(", ", $placeholders) . ", updated_at = :updated_at where {$findBy} = :{$findBy}";
+        $query = "update {$this->table} set " . implode(", ", $placeholders) . " where {$findBy} = :{$findBy}";
         $stmt = self::$connection->prepare($query);
         if ($stmt->execute($properties)) {
             return $stmt->rowCount();
