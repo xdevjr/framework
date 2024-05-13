@@ -18,7 +18,6 @@ class QueryBuilder
     {
         $alias = $operator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($field, $value), "()")) : $this->setBindsAndGetAlias($field, $value);
         $this->query["where"] = " where {$field} {$operator} {$alias}";
-        dump($this->query);
         return $this;
     }
 
