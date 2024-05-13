@@ -20,7 +20,7 @@ class HomeController
         $userModel = new User;
 
         $query = new QueryBuilder;
-        dump($query->update('users', $userEntity->getProperties(), "id", "between", [15,20]));
+        dump($query->select("users")->where("id",">", 1)->andWhere("id", "<", 5)->getQuery(), $query->getBinds());
     }
 
 }

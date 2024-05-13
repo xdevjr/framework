@@ -8,18 +8,18 @@ use core\library\database\DBLayer;
 
 require ("../vendor/autoload.php");
 
-DBLayer::setConnection([
-    "driver" => "mysql",
-    "host" => "localhost",
-    "dbname" => "framework",
-    "username" => "root",
-    "password" => "",
-    "options" => [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8;SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"
-    ]
-]);
+// DBLayer::setConnection([
+//     "driver" => "mysql",
+//     "host" => "localhost",
+//     "dbname" => "framework",
+//     "username" => "root",
+//     "password" => "",
+//     "options" => [
+//         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+//         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+//         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8;SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"
+//     ]
+// ]);
 
 $router = new Router("app\\controllers\\");
 

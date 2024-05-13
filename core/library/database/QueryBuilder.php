@@ -101,13 +101,25 @@ class QueryBuilder
             $alias = "";
             $values = [];
             foreach ($value as $key => $item) {
-                $alias .= is_int($key) ? ":val{$key}, " : ":{$key}, ";
-                $this->query["binds"][is_int($key) ? "val{$key}" : $key] = $item;
+                if (!isset($this->query["binds"][is_int($key) ? "val{$key}" : $key])) {
+                    $alias .= is_int($key) ? ":val{$key}, " : ":{$key}, ";
+                    $this->query["binds"][is_int($key) ? "val{$key}" : $key] = $item;
+                } else {
+                    $i = uniqid();
+                    $alias .= is_int($key) ? ":val{$key}{$i}, " : ":{$key}{$i}, ";
+                    $this->query["binds"][is_int($key) ? "val{$key}{$i}" : "{$key}{$i}"] = $item;
+                }
             }
             $alias = "(" . rtrim($alias, ", ") . ")";
         } else {
-            $alias = ":{$field}";
-            $this->query["binds"][$field] = $value;
+            if (!isset($this->query["binds"][$field])) {
+                $alias = ":{$field}";
+                $this->query["binds"][$field] = $value;
+            }else{
+                $i = uniqid();
+                $alias = ":{$field}{$i}";
+                $this->query["binds"]["{$field}{$i}"] = $value;
+            }
         }
 
         return $alias;
@@ -129,7 +141,7 @@ class QueryBuilder
         return "{$select}{$insert}{$update}{$delete}{$where}{$group}{$order}{$limit}{$offset}";
     }
 
-    private function getBinds(): ?array
+    public function getBinds(): ?array
     {
         return $this->query["binds"] ?? null;
     }
