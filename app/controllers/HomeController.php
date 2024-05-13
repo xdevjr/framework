@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\database\entities\UserEntity;
 use app\database\models\User;
+use core\library\database\QueryBuilder;
 use Faker\Factory;
 
 class HomeController
@@ -13,12 +14,13 @@ class HomeController
         $faker = Factory::create("pt_BR");
         $userEntity = new UserEntity;
         $userEntity->set([
-            "password" => "123"
+            "updated_at"=> date("Y-m-d H:i:s"),
         ]);
 
         $userModel = new User;
 
-        dump($userModel->update($userEntity, 4));
+        $query = new QueryBuilder;
+        dump($query->update('users', $userEntity->getProperties(), "id", "between", [15,20]));
     }
 
 }

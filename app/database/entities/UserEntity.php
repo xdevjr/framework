@@ -16,7 +16,8 @@ class UserEntity extends Entity
 
     public function passwordHash(): void
     {
-        $this->password = password_hash($this->password, PASSWORD_DEFAULT);
+        if (isset($this->password)) 
+            $this->password = password_hash($this->password, PASSWORD_DEFAULT);
     }
 
     public function verifyPassword(string $password)
