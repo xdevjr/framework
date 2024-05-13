@@ -100,7 +100,7 @@ class Validator
 
     private function alpha(string $field, string $value): bool
     {
-        if (is_string($value) and preg_match("/^[A-zÀ-ú]+$/",$value))
+        if (is_string($value) and preg_match("/^[A-zÀ-ú]+$/", $value))
             return true;
 
         $this->addMessage($field, "O campo {$field} tem que conter apenas letras sem espaços!", __FUNCTION__);
@@ -136,7 +136,7 @@ class Validator
 
     private function uppercase(string $field, mixed $value): bool
     {
-        if (is_string($value) and preg_match("/^[A-ZÀ-Û]+$/",$value))
+        if (is_string($value) and preg_match_all("/^[^a-zà-û]+$/", $value))
             return true;
 
         $this->addMessage($field, "O campo {$field} precisa ter todas as letras maiúsculas!", __FUNCTION__);
@@ -145,7 +145,7 @@ class Validator
 
     private function lowercase(string $field, mixed $value): bool
     {
-        if (is_string($value) and preg_match("/^[a-zà-ú]+$/",$value))
+        if (is_string($value) and preg_match_all("/^[^A-ZÀ-Û]+$/", $value))
             return true;
 
         $this->addMessage($field, "O campo {$field} precisa ter todas as letras minusculas!", __FUNCTION__);
@@ -172,7 +172,7 @@ class Validator
 
     private function alphanum(string $field, mixed $value): bool
     {
-        if (is_string($value) and preg_match("/^[A-zÀ-ú0-9]+$/",$value))
+        if (is_string($value) and preg_match("/^[A-zÀ-ú0-9]+$/", $value))
             return true;
 
         $this->addMessage($field, "O campo {$field} deve conter apenas letras, números e espaços!", __FUNCTION__);
@@ -199,7 +199,7 @@ class Validator
 
     public function alphanumspecial(string $field, mixed $value): bool
     {
-        if (is_string($value) and preg_match("/^[[:punct:]A-zÀ-û]+$/", $value))
+        if (is_string($value) and preg_match("/^[A-zÀ-û0-9[:punct:]]+$/", $value))
             return true;
 
         $this->addMessage($field, "O campo {$field} deve conter apenas letras, números e caracteres especiais!", __FUNCTION__);

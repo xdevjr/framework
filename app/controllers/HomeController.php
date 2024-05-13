@@ -14,13 +14,17 @@ class HomeController
         $faker = Factory::create("pt_BR");
         $userEntity = new UserEntity;
         $userEntity->set([
-            "updated_at"=> date("Y-m-d H:i:s"),
+            "firstName"=> $faker->firstName,
+            "lastName"=> $faker->lastName,
+            "email"=> $faker->email,
+            "password"=> $faker->password,
         ]);
 
         $userModel = new User;
+        // dump($userModel->save($userEntity));
 
         $query = new QueryBuilder;
-        dump($query->select("users")->where("id",">", 1)->andWhere("id", "<", 5)->getQuery(), $query->getBinds());
+        dump($query->select("users")->where("id","between", [5,10])->fetchAll(), $query->getBinds());
     }
 
 }

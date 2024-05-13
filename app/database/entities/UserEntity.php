@@ -27,6 +27,7 @@ class UserEntity extends Entity
 
     public function set(array $properties): void
     {
+        dump($properties);
         $validate = validate();
         $valid = $validate->fromArray($properties, [
             "firstName"=> "required|alpha",

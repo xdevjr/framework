@@ -115,7 +115,7 @@ class QueryBuilder
             if (!isset($this->query["binds"][$field])) {
                 $alias = ":{$field}";
                 $this->query["binds"][$field] = $value;
-            }else{
+            } else {
                 $i = uniqid();
                 $alias = ":{$field}{$i}";
                 $this->query["binds"]["{$field}{$i}"] = $value;
@@ -146,13 +146,33 @@ class QueryBuilder
         return $this->query["binds"] ?? null;
     }
 
+    public function beginTransaction(): bool
+    {
+        return Connection::get()->beginTransaction();
+    }
+
+    public function commit(): bool
+    {
+        return Connection::get()->commit();
+    }
+
+    public function rollBack(): bool
+    {
+        return Connection::get()->rollBack();
+    }
+
+    public function reset(): QueryBuilder
+    {
+        $this->query = [];
+
+        return $this;
+    }
+
     public function execute(): bool|\PDOStatement
     {
-        dump($this->query);
-        $this->getConnection();
+        $this->connection = Connection::get();
         $stmt = $this->connection->prepare($this->getQuery());
         if ($stmt->execute($this->getBinds())) {
-            $this->query = [];
             return $stmt;
         }
         return false;
@@ -183,26 +203,6 @@ class QueryBuilder
     public function rowCount(): int
     {
         return $this->execute()->rowCount();
-    }
-
-    private function getConnection(): void
-    {
-        extract([
-            "driver" => "mysql",
-            "host" => "localhost",
-            "dbname" => "framework",
-            "username" => "root",
-            "password" => "",
-            "options" => [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_OBJ,
-                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
-            ]
-        ]);
-        $port = !empty($port) ? "port={$port}" : "";
-        $host = $driver !== 'sqlite' ? "host={$host};" : $file;
-        $dbname = !empty($dbname) ? "dbname={$dbname};" : "";
-        $this->connection = new \PDO("{$driver}:{$host}{$dbname}{$port}", $username, $password, $options);
     }
 
 }
