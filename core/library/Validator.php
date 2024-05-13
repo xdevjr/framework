@@ -199,7 +199,7 @@ class Validator
 
     public function alphanumspecial(string $field, mixed $value): bool
     {
-        if (is_string($value) and preg_match("/^[[:punct:][:alnum:]]+$/", $value))
+        if (is_string($value) and preg_match("/^[[:punct:]A-zÀ-û]+$/", $value))
             return true;
 
         $this->addMessage($field, "O campo {$field} deve conter apenas letras, números e caracteres especiais!", __FUNCTION__);
