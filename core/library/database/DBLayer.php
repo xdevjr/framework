@@ -13,9 +13,9 @@ abstract class DBLayer
         self::$entityNamespace = $namespace;
     }
 
-    private function getConnection(): ?\PDO
+    public function getQueryBuilder(): QueryBuilder
     {
-        return Connection::get();
+        return new QueryBuilder;
     }
 
     private function getEntity()
@@ -30,55 +30,36 @@ abstract class DBLayer
 
         return $entity;
     }
-    public function all(string $fields = "*"): ?array
+    public function all(string|array $fields = "*"): ?array
     {
-        $query = "select {$fields} from {$this->table}";
-        $stmt = $this->getConnection()->prepare($query);
-        if ($stmt->execute()) {
-            return $stmt->fetchAll(\PDO::FETCH_CLASS, $this->getEntity());
-        }
+        $result = $this->getQueryBuilder()->select($this->table, $fields)->fetchAll($this->getEntity());
+        return $result;
     }
 
-    public function find(string $value, string $by = "id", string $fields = "*"): ?Entity
+    public function find(string $value, string $by = "id", string|array $fields = "*"): ?Entity
     {
-        $query = "select {$fields} from {$this->table} where {$by} = ?";
-        $stmt = $this->getConnection()->prepare($query);
-        if ($stmt->execute([$value])) {
-            return $stmt->fetchObject($this->getEntity()) ?: null;
-        }
+        $result = $this->getQueryBuilder()->select($this->table, $fields)->where($by, "=", $value)->fetch($this->getEntity());
+        return $result;
     }
 
-    public function save(Entity $entity): ?int
+    public function save(Entity $entity): bool|string
     {
-        $attributes = $entity->getProperties();
-        $query = "insert into {$this->table} (" . implode(", ", array_keys($attributes)) . ") values (:" . implode(", :", array_keys($attributes)) . ")";
-        $stmt = $this->getConnection()->prepare($query);
-        if ($stmt->execute($attributes)) {
-            return $stmt->rowCount();
-        }
+        $properties = $entity->getProperties();
+        $result = $this->getQueryBuilder()->insert($this->table, $properties);
+        return $result;
     }
 
-    public function update(Entity $entity, string $findValue, string $findBy = "id"): ?int
+    public function update(Entity $entity, string $findValue, string $findBy = "id"): int
     {
         $properties = $entity->getProperties();
         $properties["updated_at"] = date("Y-m-d H:i:s");
-        foreach ($properties as $key => $value) {
-            $placeholders[] = $key . " = :" . $key;
-        }
-        $properties[$findBy] = $this->find($findValue, $findBy)->$findBy ?? null;
-        $query = "update {$this->table} set " . implode(", ", $placeholders) . " where {$findBy} = :{$findBy}";
-        $stmt = $this->getConnection()->prepare($query);
-        if ($stmt->execute($properties)) {
-            return $stmt->rowCount();
-        }
+        $result = $this->getQueryBuilder()->update($this->table, $properties, $findBy, "=", $findValue);
+        return $result;
     }
 
-    public function delete(string $value, string $findBy = "id"): ?int
+    public function delete(string $value, string $findBy = "id"): int
     {
-        $query = "delete from {$this->table} where {$findBy} = :{$findBy}";
-        $stmt = $this->getConnection()->prepare($query);
-        if ($stmt->execute([$findBy => $value])) {
-            return $stmt->rowCount();
-        }
+        $result = $this->getQueryBuilder()->delete($this->table, $findBy, "=", $value);
+        return $result;
     }
 }

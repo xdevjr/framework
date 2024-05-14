@@ -1,6 +1,7 @@
 <?php
 
 namespace core\library\database;
+
 use core\library\Paginator;
 
 class QueryBuilder
@@ -64,7 +65,7 @@ class QueryBuilder
     public function insert(string $table, array $data): bool|string
     {
         $alias = $this->setBindsAndGetAlias($table, $data);
-        $this->query["insert"] = "insert into {$table} (" . implode(",", array_keys($data)) . ") values {$alias}";
+        $this->query["query"] = "insert into {$table} (" . implode(",", array_keys($data)) . ") values {$alias}";
         $this->execute();
         return $this->connection->lastInsertId();
     }
@@ -73,14 +74,14 @@ class QueryBuilder
     {
         $alias = $this->setUpdate($data);
         $whereAlias = $whereOperator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($whereField, $whereValue), "()")) : $this->setBindsAndGetAlias($whereField, $whereValue);
-        $this->query["update"] = "update {$table} set {$alias} where {$whereField} {$whereOperator} {$whereAlias}";
+        $this->query["query"] = "update {$table} set {$alias} where {$whereField} {$whereOperator} {$whereAlias}";
         return $this->execute()->rowCount();
     }
 
     public function delete(string $table, string $whereField, string $whereOperator, string|int|array $whereValue): int
     {
         $whereAlias = $whereOperator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($whereField, $whereValue), "()")) : $this->setBindsAndGetAlias($whereField, $whereValue);
-        $this->query["delete"] = "delete from {$table} where {$whereField} {$whereOperator} {$whereAlias}";
+        $this->query["query"] = "delete from {$table} where {$whereField} {$whereOperator} {$whereAlias}";
         return $this->execute()->rowCount();
     }
 
@@ -137,10 +138,7 @@ class QueryBuilder
     public function getQuery(): string
     {
         extract(array_merge([
-            "query"=> "",
-            "insert" => "",
-            "update" => "",
-            "delete" => "",
+            "query" => "",
             "select" => "",
             "where" => "",
             "limit" => "",
@@ -148,7 +146,7 @@ class QueryBuilder
             "order" => "",
             "group" => "",
         ], $this->query));
-        return "{$query}{$insert}{$update}{$delete}{$select}{$where}{$group}{$order}{$limit}{$offset}";
+        return "{$query}{$select}{$where}{$group}{$order}{$limit}{$offset}";
     }
 
     public function paginate(int $limit, int $currentPage = 1, string $link = "?page=", int $maxLinksPerPage = 5)
@@ -200,7 +198,7 @@ class QueryBuilder
         return false;
     }
 
-    public function fetch(?string $entity = null): bool|object
+    public function fetch(?string $entity = null): ?object
     {
         if ($entity and !class_exists($entity)) {
             throw new \Exception("Entity {$entity} does not exist!");
@@ -208,7 +206,7 @@ class QueryBuilder
             throw new \Exception("Entity {$entity} needs to implement the " . Entity::class . "!");
         }
 
-        return $this->execute()->fetchObject($entity);
+        return $this->execute()->fetchObject($entity) ?: null;
     }
 
     public function fetchAll(?string $entity = null): array
