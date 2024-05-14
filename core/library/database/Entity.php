@@ -26,4 +26,10 @@ abstract class Entity
                 throw new \Exception("This property \"{$name}\" not exist in " . static::class . "!");
         }
     }
+
+    public function getModel(): DBLayer
+    {
+        $model = MODEL_NAMESPACE.str_replace("Entity", "", (new \ReflectionClass(static::class))->getShortName());
+        return (new $model)->entity($this);
+    }
 }

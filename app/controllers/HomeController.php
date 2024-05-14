@@ -3,8 +3,6 @@
 namespace app\controllers;
 
 use app\database\entities\UserEntity;
-use app\database\models\User;
-use core\library\database\QueryBuilder;
 use Faker\Factory;
 
 class HomeController
@@ -12,20 +10,21 @@ class HomeController
     public function index(int $page = 1): void
     {
         $faker = Factory::create("pt_BR");
-        $userEntity = new UserEntity;
-        $userEntity->set([
+        $user = new UserEntity;
+        $user->set([
             "firstName" => $faker->firstName,
             "lastName" => $faker->lastName,
             "email" => $faker->email,
             "password" => $faker->password,
         ]);
 
-        $userModel = new User;
-        // dump($userModel->save($userEntity));
+        dump($user->getModel()->update(10));
 
-        $query = new QueryBuilder;
-        dump($query->query("select * from users")->paginate( 1, $page, "/")->fetch());
-        echo $query->paginateLinks;
+        
+
+        // $query = new QueryBuilder;
+        // dump($query->query("select * from users")->paginate( 1, $page, "/")->fetch());
+        // echo $query->paginateLinks;
     }
 
 }
