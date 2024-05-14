@@ -2,8 +2,11 @@
 
 namespace app\controllers;
 
-use app\database\entities\UserEntity;
 use Faker\Factory;
+use app\database\models\Post;
+use app\database\entities\PostEntity;
+use app\database\entities\UserEntity;
+use core\library\database\QueryBuilder;
 
 class HomeController
 {
@@ -18,8 +21,7 @@ class HomeController
             "password" => $faker->password,
         ]);
 
-        dump($user->getModel()->update(10));
-
+        dump($user->getModel()->all()->relationWith(Post::class, "id", "user_id")->getResult());
         
 
         // $query = new QueryBuilder;

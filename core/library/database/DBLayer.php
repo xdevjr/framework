@@ -7,6 +7,7 @@ abstract class DBLayer
 
     protected string $table;
     protected Entity $entity;
+    protected array|Entity $results;
 
     public function entity(Entity $entity): static
     {
@@ -19,7 +20,7 @@ abstract class DBLayer
         return new QueryBuilder;
     }
 
-    private function getEntity()
+    private function getEntity(): string
     {
         $reflect = new \ReflectionClass(static::class);
         $entity = ENTITY_NAMESPACE . $reflect->getShortName() . "Entity";
@@ -31,16 +32,20 @@ abstract class DBLayer
 
         return $entity;
     }
-    public function all(string|array $fields = "*"): ?array
+    public function all(string|array $fields = "*"): static
     {
         $result = $this->getQueryBuilder()->select($this->table, $fields)->fetchAll($this->getEntity());
-        return $result;
+        $this->results = $result;
+        return $this;
     }
 
-    public function find(string $value, string $by = "id", string|array $fields = "*"): ?Entity
+    public function find(string $value, string $by = "id", string|array $fields = "*"): static
     {
-        $result = $this->getQueryBuilder()->select($this->table, $fields)->where($by, "=", $value)->fetch($this->getEntity());
-        return $result;
+        $result = $this->getQueryBuilder()->select($this->table, $fields)->where($by, "=", $value)->fetchAll($this->getEntity());
+        if ($result)
+            $this->results = $result;
+
+        return $this;
     }
 
     public function save(): bool|string
@@ -62,5 +67,33 @@ abstract class DBLayer
     {
         $result = $this->getQueryBuilder()->delete($this->table, $findBy, "=", $value);
         return $result;
+    }
+
+    public function getResult(): array|Entity|null
+    {
+        return $this->results ?? null;
+    }
+
+    public function relationWith(string $model, string $field, string $relationField, string $alias = "relation"): static
+    {
+        if (!class_exists($model)) {
+            throw new \Exception("Model {$model} does not exist!");
+        }
+        $model = new $model;
+        if (!$model instanceof DBLayer) {
+            throw new \Exception("Model {$model} needs to implement the " . DBLayer::class . "!");
+        }
+
+        $relations = [];
+        foreach ($this->results as $result) {
+            $find = $model->find($result->$field, $relationField)->getResult();
+            if ($find)
+                $result->$alias = $find;
+
+            $relations[] = $result;
+        }
+
+        $this->results = $relations;
+        return $this;
     }
 }
