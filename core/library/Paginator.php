@@ -54,18 +54,16 @@ class Paginator
                                 <a href='{$this->link}1' class='{$this->classes['a']}'>Primeira</a>
                             </li>";
 
-        for ($i = $this->currentPage - $this->maxLinksPerPage; $i <= $this->currentPage - 1; $i++) {
-            if ($i > 0)
-                $html .= "<li class='{$this->classes['li']}'><a class='{$this->classes['a']}' href='{$this->link}{$i}'>{$i}</a></li>";
-        }
-
-        $html .= "<li class='{$this->classes['active']}'>
+        $startLink = max(1, $this->currentPage - floor($this->maxLinksPerPage / 2));
+        $endLink = min($startLink + $this->maxLinksPerPage - 1, $this->getTotalPages());
+        for ($i = $startLink; $i <= $endLink; $i++) {
+            if ($i == $this->currentPage) {
+                $html .= "<li class='{$this->classes['active']}'>
                                     <a class='{$this->classes['a']}'>{$this->currentPage}</a>
                                 </li>";
-
-        for ($i = $this->currentPage + 1; $i <= $this->currentPage + $this->maxLinksPerPage; $i++) {
-            if ($i <= $this->getTotalPages())
+            } else {
                 $html .= "<li class='{$this->classes['li']}'><a class='{$this->classes['a']}' href='{$this->link}{$i}'>{$i}</a></li>";
+            }
         }
 
         $html .= "<li class='{$this->classes['li']}'>

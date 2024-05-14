@@ -1,11 +1,13 @@
 <?php
 
 namespace core\library\database;
+use core\library\Paginator;
 
 class QueryBuilder
 {
     private ?\PDO $connection = null;
     private array $query = [];
+    public ?string $paginateLinks = null;
 
     public function select(string $table, string|array $fields = "*"): QueryBuilder
     {
@@ -82,6 +84,13 @@ class QueryBuilder
         return $this->execute()->rowCount();
     }
 
+    public function query(string $query, array $binds = [])
+    {
+        $this->query["query"] = $query;
+        $this->query["binds"] = $binds;
+        return $this;
+    }
+
     private function setUpdate(array $data): string
     {
         $set = "";
@@ -128,17 +137,29 @@ class QueryBuilder
     public function getQuery(): string
     {
         extract(array_merge([
+            "query"=> "",
+            "insert" => "",
+            "update" => "",
+            "delete" => "",
             "select" => "",
             "where" => "",
             "limit" => "",
             "offset" => "",
             "order" => "",
             "group" => "",
-            "insert" => "",
-            "update" => "",
-            "delete" => "",
         ], $this->query));
-        return "{$select}{$insert}{$update}{$delete}{$where}{$group}{$order}{$limit}{$offset}";
+        return "{$query}{$insert}{$update}{$delete}{$select}{$where}{$group}{$order}{$limit}{$offset}";
+    }
+
+    public function paginate(int $limit, int $currentPage = 1, string $link = "?page=", int $maxLinksPerPage = 5)
+    {
+        $paginate = new Paginator($currentPage, $limit, $this->rowCount(), $link, $maxLinksPerPage);
+
+        $this->limit($paginate->getLimit());
+        $this->offset($paginate->getOffset());
+        $this->paginateLinks = $paginate->generateLinks();
+
+        return $this;
     }
 
     public function getBinds(): ?array
@@ -164,6 +185,7 @@ class QueryBuilder
     public function reset(): QueryBuilder
     {
         $this->query = [];
+        $this->paginateLinks = null;
 
         return $this;
     }

@@ -14,17 +14,18 @@ class HomeController
         $faker = Factory::create("pt_BR");
         $userEntity = new UserEntity;
         $userEntity->set([
-            "firstName"=> $faker->firstName,
-            "lastName"=> $faker->lastName,
-            "email"=> $faker->email,
-            "password"=> $faker->password,
+            "firstName" => $faker->firstName,
+            "lastName" => $faker->lastName,
+            "email" => $faker->email,
+            "password" => $faker->password,
         ]);
 
         $userModel = new User;
         // dump($userModel->save($userEntity));
 
         $query = new QueryBuilder;
-        dump($query->select("users")->where("id","between", [5,10])->fetchAll(), $query->getBinds());
+        dump($query->query("select * from users")->paginate( 1, $page, "/")->fetch());
+        echo $query->paginateLinks;
     }
 
 }
