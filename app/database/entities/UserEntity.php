@@ -6,6 +6,21 @@ use core\library\database\Entity;
 
 class UserEntity extends Entity
 {
+    public function __construct(array $properties = [])
+    {
+        $validate = validate();
+        $valid = $validate->fromArray($properties, [
+            "firstName" => "required|alpha",
+            "lastName" => "required|alpha",
+            "email" => "required|email",
+            "password" => "required|alphanumspecial",
+        ]);
+        if (!$valid) {
+            throw new \Exception($validate->getFirstMessage());
+        }
+        parent::__construct($properties);
+        $this->passwordHash();
+    }
     public function passwordHash(): void
     {
         if (isset($this->password))
@@ -18,21 +33,5 @@ class UserEntity extends Entity
             return password_verify($password, $this->password);
         else
             return false;
-    }
-
-    public function set(array $properties): void
-    {
-        $validate = validate();
-        $valid = $validate->fromArray($properties, [
-            "firstName" => "required|alpha",
-            "lastName" => "required|alpha",
-            "email" => "required|email",
-            "password" => "required|alphanumspecial",
-        ]);
-        if (!$valid) {
-            throw new \Exception($validate->getFirstMessage());
-        }
-        parent::set($properties);
-        $this->passwordHash();
     }
 }

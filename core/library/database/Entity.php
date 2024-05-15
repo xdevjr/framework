@@ -6,6 +6,12 @@ namespace core\library\database;
 abstract class Entity
 {
 
+    public function __construct(array $properties = [])
+    {
+        foreach ($properties as $name => $value) {
+            $this->$name = $value;
+        }
+    }
     public function __set(string $name, mixed $value): void
     {
         $this->$name = $value;
@@ -14,13 +20,6 @@ abstract class Entity
     public function getProperties(): array
     {
        return get_object_vars($this);
-    }
-
-    public function set(array $properties): void
-    {
-        foreach ($properties as $name => $value) {
-            $this->$name = $value;
-        }
     }
 
     public function getModel(): DBLayer
