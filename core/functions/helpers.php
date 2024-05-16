@@ -52,3 +52,11 @@ function root(string $path = null): string
 
     return $root;
 }
+
+function slug(string $string): string
+{
+    $slug = iconv("utf-8", "us-ascii//TRANSLIT", strtolower(trim($string)));
+    $slug = preg_replace(["/\s+/", "/[^\-\w]/"], ["-", ""], $slug);
+
+    return $slug;
+}
