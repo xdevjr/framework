@@ -1,4 +1,5 @@
 <?php
+use core\library\router\Router;
 use Twig\Environment;
 use core\library\Request;
 use core\library\Session;
@@ -44,13 +45,9 @@ function validate(): Validator
     return new Validator();
 }
 
-function root(string $path = null): string
+function root(string $path = ""): string
 {
-    $root = dirname(__DIR__, 2);
-    if ($path != null)
-        $root .= $path;
-
-    return $root;
+    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . trim($path, "\/") . DIRECTORY_SEPARATOR;
 }
 
 function slug(string $string): string
@@ -59,4 +56,9 @@ function slug(string $string): string
     $slug = preg_replace(["/\s+/", "/[^\-\w]/"], ["-", ""], $slug);
 
     return $slug;
+}
+
+function url(string $nameOrPath, array $parameters = [], array $getParameters = []): string
+{
+    return Router::getUrl($nameOrPath, $parameters, $getParameters);
 }
