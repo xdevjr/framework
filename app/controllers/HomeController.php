@@ -19,8 +19,8 @@ class HomeController
             "email" => $faker->email,
             "password" => $faker->password,
         ]);
-
-        dump($user, $user->getModel()->all()->relationWith(Post::class, "user_id", alias: "posts")->getResult());
+        
+        dump($user->getModel()->find(28)->relationWith(Post::class, "user_id", alias: "posts")->getResult());
 
 
         // $query = new QueryBuilder;

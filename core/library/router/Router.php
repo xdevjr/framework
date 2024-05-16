@@ -120,7 +120,7 @@ class Router
             if ($errors)
                 call_user_func($errors, $e);
             else
-                echo $e->getMessage();
+                echo nl2br("Trace:\n{$e->getTraceAsString()}\n\n Erro: {$e->getMessage()} \nLine: {$e->getLine()} \nFile: {$e->getFile()}");
             exit;
         }
 

@@ -6,13 +6,11 @@ abstract class DBLayer
 {
 
     protected string $table;
-    protected Entity $entity;
-    protected array|Entity $results;
+    protected array|Entity|null $results = null;
 
-    public function entity(Entity $entity): static
-    {
-        $this->entity = $entity;
-        return $this;
+    public function __construct(
+        public ?Entity $entity = null
+    ) {
     }
 
     public function getQueryBuilder(): QueryBuilder
@@ -81,13 +79,15 @@ abstract class DBLayer
 
     public function relationWith(string $model, string $relationField, string $findField = "id", string $alias = "relation"): static
     {
-        if (!class_exists($model)) {
+        if (!class_exists($model))
             throw new \Exception("Model {$model} does not exist!");
-        }
+
         $model = new $model;
-        if (!$model instanceof DBLayer) {
+        if (!$model instanceof DBLayer)
             throw new \Exception("Model {$model} needs to implement the " . DBLayer::class . "!");
-        }
+
+        if (!$this->results)
+            throw new \Exception("Unable to create relationship, no records found!");
 
         if (is_array($this->results)) {
             $value = array_column($this->results, $findField);

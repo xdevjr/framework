@@ -25,6 +25,6 @@ abstract class Entity
     public function getModel(): DBLayer
     {
         $model = MODEL_NAMESPACE.str_replace("Entity", "", (new \ReflectionClass(static::class))->getShortName());
-        return (new $model)->entity($this);
+        return new $model($this);
     }
 }
