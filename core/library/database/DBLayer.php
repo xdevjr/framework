@@ -15,7 +15,7 @@ abstract class DBLayer
 
     public function getQueryBuilder(): QueryBuilder
     {
-        return new QueryBuilder;
+        return QueryBuilder::table($this->table);
     }
 
     private function getEntity(): string
@@ -30,16 +30,16 @@ abstract class DBLayer
 
         return $entity;
     }
-    public function all(string|array $fields = "*"): static
+    public function all(array $fields = ["*"]): static
     {
-        $result = $this->getQueryBuilder()->select($this->table, $fields)->fetchAll($this->getEntity());
+        $result = $this->getQueryBuilder()->select($fields)->fetchAll($this->getEntity());
         $this->results = $result;
         return $this;
     }
 
-    public function find(string|array $value, string $by = "id", string $operator = "=", string|array $fields = "*"): static
+    public function find(string|array $value, string $by = "id", string $operator = "=", array $fields = ["*"]): static
     {
-        $query = $this->getQueryBuilder()->select($this->table, $fields)->where($by, $operator, $value);
+        $query = $this->getQueryBuilder()->select($fields)->where($by, $operator, $value);
         if ($query->rowCount() > 1) {
             $result = $query->fetchAll($this->getEntity());
         } else {
@@ -54,7 +54,7 @@ abstract class DBLayer
     public function save(): bool|string
     {
         $properties = $this->entity->getProperties();
-        $result = $this->getQueryBuilder()->insert($this->table, $properties);
+        $result = $this->getQueryBuilder()->insert($properties);
         return $result;
     }
 
@@ -62,13 +62,13 @@ abstract class DBLayer
     {
         $properties = $this->entity->getProperties();
         $properties["updated_at"] = date("Y-m-d H:i:s");
-        $result = $this->getQueryBuilder()->update($this->table, $properties, $findBy, "=", $findValue);
+        $result = $this->getQueryBuilder()->update($properties, $findBy, "=", $findValue);
         return $result;
     }
 
     public function delete(string $value, string $findBy = "id"): int
     {
-        $result = $this->getQueryBuilder()->delete($this->table, $findBy, "=", $value);
+        $result = $this->getQueryBuilder()->delete($findBy, "=", $value);
         return $result;
     }
 

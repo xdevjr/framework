@@ -10,31 +10,40 @@ class QueryBuilder
     private array $query = [];
     public ?string $paginateLinks = null;
 
-    public function select(string $table, string|array $fields = "*"): QueryBuilder
+    public function __construct(private string $table)
     {
-        $fields = is_string($fields) ? $fields : implode(", ", $fields);
-        $this->query["select"] = "select {$fields} from {$table}";
+    }
+    public static function table(string $table): QueryBuilder
+    {
+        return new static($table);
+    }
+
+    public function select(array $fields = ["*"]): QueryBuilder
+    {
+        $fields = "{$this->table}.".implode(", {$this->table}.", $fields);
+        $this->query["fields"] = $fields;
+        $this->query["select"] = "select {$fields} from {$this->table} ";
         return $this;
     }
 
     public function where(string $field, string $operator, string|int|array $value): QueryBuilder
     {
         $alias = $operator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($field, $value), "()")) : $this->setBindsAndGetAlias($field, $value);
-        $this->query["where"] = " where {$field} {$operator} {$alias}";
+        $this->query["where"] = " where {$this->table}.{$field} {$operator} {$alias}";
         return $this;
     }
 
     public function orWhere(string $field, string $operator, string|int|array $value): QueryBuilder
     {
         $alias = $operator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($field, $value), "()")) : $this->setBindsAndGetAlias($field, $value);
-        $this->query["where"] .= " or {$field} {$operator} {$alias}";
+        $this->query["where"] .= " or {$this->table}.{$field} {$operator} {$alias}";
         return $this;
     }
 
     public function andWhere(string $field, string $operator, string|int|array $value): QueryBuilder
     {
         $alias = $operator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($field, $value), "()")) : $this->setBindsAndGetAlias($field, $value);
-        $this->query["where"] .= " and {$field} {$operator} {$alias}";
+        $this->query["where"] .= " and {$this->table}.{$field} {$operator} {$alias}";
         return $this;
     }
 
@@ -52,36 +61,81 @@ class QueryBuilder
 
     public function order(string $field, string $direction = "asc"): QueryBuilder
     {
-        $this->query["order"] = " order by {$field} {$direction}";
+        $this->query["order"] = " order by {$this->table}.{$field} {$direction}";
         return $this;
     }
 
     public function group(string $field): QueryBuilder
     {
-        $this->query["group"] = " group by {$field}";
+        $this->query["group"] = " group by {$this->table}.{$field}";
         return $this;
     }
 
-    public function insert(string $table, array $data): bool|string
+    public function innerJoin(string $table, array $fields): QueryBuilder
     {
-        $alias = $this->setBindsAndGetAlias($table, $data);
-        $this->query["query"] = "insert into {$table} (" . implode(",", array_keys($data)) . ") values {$alias}";
+        $fields = $this->query["fields"].", {$table}.".implode(", {$table}.", $fields);
+        $this->query["select"] = "select {$fields} from {$this->table} ";
+        $this->query["join"] = " inner join {$table}";
+        $this->query["joinTable"] = $table;
+        return $this;
+    }
+
+    public function leftJoin(string $table, array $fields): QueryBuilder
+    {
+        $fields = $this->query["fields"].", {$table}.".implode(", {$table}.", $fields);
+        $this->query["select"] = "select {$fields} from {$this->table} ";
+        $this->query["join"] = " left join {$table}";
+        $this->query["joinTable"] = $table;
+        return $this;
+    }
+
+    public function rightJoin(string $table, array $fields): QueryBuilder
+    {
+        $fields = $this->query["fields"].", {$table}.".implode(", {$table}.", $fields);
+        $this->query["select"] = "select {$fields} from {$this->table} ";
+        $this->query["join"] = " right join {$table}";
+        $this->query["joinTable"] = $table;
+        return $this;
+    }
+
+    public function on(string $field, string $operator, string $joinField): QueryBuilder
+    {
+        $this->query["on"] = " on {$this->table}.{$field} {$operator} {$this->query['joinTable']}.{$joinField}";
+        return $this;
+    }
+
+    public function andOn(string $joinField, string $operator, string $field): QueryBuilder
+    {
+        $this->query["on"] .= " {$this->query['joinTable']}.{$joinField} {$operator} {$this->table}.{$field}";
+        return $this;
+    }
+
+    public function orOn(string $joinField, string $operator, string $field): QueryBuilder
+    {
+        $this->query["on"] .= " {$this->query['joinTable']}.{$joinField} {$operator} {$this->table}.{$field}";
+        return $this;
+    }
+
+    public function insert(array $data): bool|string
+    {
+        $alias = $this->setBindsAndGetAlias($this->table, $data);
+        $this->query["query"] = "insert into {$this->table} (" . implode(",", array_keys($data)) . ") values {$alias}";
         $this->execute();
         return $this->connection->lastInsertId();
     }
 
-    public function update(string $table, array $data, string $whereField, string $whereOperator, string|int|array $whereValue): int
+    public function update(array $data, string $whereField, string $whereOperator, string|int|array $whereValue): int
     {
         $alias = $this->setUpdate($data);
         $whereAlias = $whereOperator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($whereField, $whereValue), "()")) : $this->setBindsAndGetAlias($whereField, $whereValue);
-        $this->query["query"] = "update {$table} set {$alias} where {$whereField} {$whereOperator} {$whereAlias}";
+        $this->query["query"] = "update {$this->table} set {$alias} where {$whereField} {$whereOperator} {$whereAlias}";
         return $this->execute()->rowCount();
     }
 
-    public function delete(string $table, string $whereField, string $whereOperator, string|int|array $whereValue): int
+    public function delete(string $whereField, string $whereOperator, string|int|array $whereValue): int
     {
         $whereAlias = $whereOperator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($whereField, $whereValue), "()")) : $this->setBindsAndGetAlias($whereField, $whereValue);
-        $this->query["query"] = "delete from {$table} where {$whereField} {$whereOperator} {$whereAlias}";
+        $this->query["query"] = "delete from {$this->table} where {$whereField} {$whereOperator} {$whereAlias}";
         return $this->execute()->rowCount();
     }
 
@@ -145,8 +199,10 @@ class QueryBuilder
             "offset" => "",
             "order" => "",
             "group" => "",
+            "join"=> "",
+            "on"=> "",
         ], $this->query));
-        return "{$query}{$select}{$where}{$group}{$order}{$limit}{$offset}";
+        return "{$query}{$select}{$join}{$on}{$where}{$group}{$order}{$limit}{$offset}";
     }
 
     public function paginate(int $limit, int $currentPage = 1, string $link = "?page=", int $maxLinksPerPage = 5)
