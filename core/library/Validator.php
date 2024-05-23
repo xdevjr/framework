@@ -94,7 +94,7 @@ class Validator
         if (!empty($value))
             return true;
 
-        $this->addMessage($field, "O campo {$field} é obrigatorio!", __FUNCTION__);
+        $this->addMessage($field, "O campo {$field} é obrigatório!", __FUNCTION__);
         return false;
     }
 

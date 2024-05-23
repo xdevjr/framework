@@ -10,7 +10,7 @@ use Twig\Loader\FilesystemLoader;
 
 function request(): Request
 {
-    return Request::all();
+    return Request::create();
 }
 
 function response(mixed $body, bool $json = false, int $statusCode = 200, array $headers = []): mixed

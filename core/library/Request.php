@@ -2,7 +2,7 @@
 
 namespace core\library;
 
-class Request
+readonly class Request
 {
     public function __construct(
         private array $get,
@@ -13,27 +13,54 @@ class Request
     ) {
     }
 
-    public static function all(): static
+    public static function create(): static
     {
         return new static($_GET, $_POST, $_FILES, $_COOKIE, $_SERVER);
     }
 
-    private function filterRequest(): void
+    private function filter(string $request, bool $array = false): object|array
     {
-        $this->get = filter_var_array(array_map('strip_tags', array_map('trim', $this->get)));
-        $this->post = filter_var_array(array_map('strip_tags', array_map('trim', $this->post)));
-        $this->files = filter_var_array(array_map('strip_tags', array_map('trim', $this->files)));
+        if (!property_exists($this, $request))
+            throw new \Exception("Property {$request} not exist!");
+
+        $filter = filter_var_array(array_map('trim', array_map('strip_tags', $this->$request)));
+
+        return $array ? $filter : (object) $filter;
     }
 
-    public function __call($property, $key): mixed
+    public function get(bool $filter = true, bool $array = false): object|array
     {
-        $this->filterRequest();
+        if ($filter)
+            return $this->filter("get", $array);
 
-        if (property_exists($this, $property) and empty($key))
-            return (object) $this->$property;
-        elseif (property_exists($this, $property) and count($key) == 1)
-            return $this->$property[$key[0]];
+        return $array ? $this->get : (object) $this->get;
+    }
+    public function post(bool $filter = true, bool $array = false): object|array
+    {
+        if ($filter)
+            return $this->filter("post", $array);
 
-        return "Error: Method not exists or you passed more than one property.";
+        return $array ? $this->post : (object) $this->post;
+    }
+    public function files(bool $filter = true, bool $array = false): object|array
+    {
+        if ($filter)
+            return $this->filter("files", $array);
+
+        return $array ? $this->files : (object) $this->files;
+    }
+    public function cookies(bool $filter = true, bool $array = true): object|array
+    {
+        if ($filter)
+            return $this->filter("cookies", $array);
+
+        return $array ? $this->cookies : (object) $this->cookies;
+    }
+    public function server(bool $filter = true, bool $array = true): object|array
+    {
+        if ($filter)
+            return $this->filter("server", $array);
+
+        return $array ? $this->server : (object) $this->server;
     }
 }
