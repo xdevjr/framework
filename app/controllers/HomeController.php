@@ -20,11 +20,11 @@ class HomeController
             "password" => $faker->password,
         ]);
         
-        // dump($user->getModel()->find(28)->relationWith(Post::class, "user_id", alias: "posts")->getResult());
+        dump($user->getModel()->all()->relationWith(Post::class, "user_id", alias: "posts")->getResult());
 
 
-        $query = QueryBuilder::table("users");
-        dump($query->select()->rightJoin("posts", ["title", "content"])->on("id", "=","user_id")->where("id", ">", "5")->fetchAll());
+        // $query = QueryBuilder::table("users");
+        // dump($query->select()->rightJoin("posts", ["title", "content"])->on("id", "=","user_id")->where("id", ">", "5")->fetchAll());
         // echo $query->paginateLinks;
     }
 

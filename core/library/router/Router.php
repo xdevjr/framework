@@ -2,25 +2,24 @@
 
 namespace core\library\router;
 
-class Router
+abstract class Router
 {
     private static array $routes = [];
-    private ?array $params = null;
-    private array $routeOptions = [];
-    private RouteWildcard $wildcards;
+    private static ?array $params = null;
+    private static array $routeOptions = [];
+    private static string $defaultNamespace;
 
-    public function __construct(
-        private string $defaultNamespace
-    ) {
-        $this->wildcards = new RouteWildcard();
+    public static function setDefaultNamespace(string $namespace): void
+    {
+        self::$defaultNamespace = $namespace;
     }
 
-    private function getCurrentUri(): string
+    private static function getCurrentUri(): string
     {
         return $_SERVER['REQUEST_URI'] !== "/" ? rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), "/") : "/";
     }
 
-    private function getCurrentRequestMethod(): string
+    private static function getCurrentRequestMethod(): string
     {
         return strtolower($_POST["_method"] ?? $_SERVER['REQUEST_METHOD']);
     }
@@ -59,36 +58,36 @@ class Router
         return $name . $parametersString . $getParametersString;
     }
 
-    public function group(array $groupOptions, \Closure $callback)
+    public static function group(array $groupOptions, \Closure $callback)
     {
-        $this->routeOptions = $groupOptions;
-        call_user_func($callback, $this);
-        $this->routeOptions = [];
+        self::$routeOptions = $groupOptions;
+        call_user_func($callback);
+        self::$routeOptions = [];
     }
 
-    public function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = []): ?Route
+    public static function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = []): ?Route
     {
-        $this->routeOptions["defaultNamespace"] = $this->defaultNamespace;
-        $this->routeOptions = array_merge($this->routeOptions, $routeOptions);
+        self::$routeOptions["defaultNamespace"] = self::$defaultNamespace;
+        self::$routeOptions = array_merge(self::$routeOptions, $routeOptions);
 
         if (is_string($methods)) {
-            return self::$routes[] = new Route(strtolower($methods), $uri, $callback, $this->routeOptions, $this->wildcards->get());
+            return self::$routes[] = new Route(strtolower($methods), $uri, $callback, self::$routeOptions);
         } else if (is_array($methods)) {
             foreach ($methods as $method) {
-                self::$routes[] = new Route(strtolower($method), $uri, $callback, $this->routeOptions, $this->wildcards->get());
+                self::$routes[] = new Route(strtolower($method), $uri, $callback, self::$routeOptions);
             }
         }
         return null;
     }
 
-    private function find(): Route
+    private static function find(): Route
     {
         foreach (self::$routes as $route) {
-            if (preg_match($route->getRegex(), $this->getCurrentUri())) {
-                if ($route->getMethod() === $this->getCurrentRequestMethod()) {
+            if (preg_match($route->getRegex(), self::getCurrentUri())) {
+                if ($route->getMethod() === self::getCurrentRequestMethod()) {
                     $explodeRoute = explode('/', ltrim(str_replace('(', '', $route->getUri()), '/'));
-                    $explodeCurrentUri = explode('/', ltrim($this->getCurrentUri(), '/'));
-                    $this->params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
+                    $explodeCurrentUri = explode('/', ltrim(self::getCurrentUri(), '/'));
+                    self::$params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
 
                     return $route;
                 }
@@ -100,22 +99,22 @@ class Router
         throw new \Exception("Rota não encontrada!", 404);
     }
 
-    private function execute(Route $route): void
+    private static function execute(Route $route): void
     {
         $route->executeMiddlewares();
 
         if ($route->getOption('parameters')) {
-            call_user_func($route->getAction(), ...[...$route->getOption('parameters'), ...$this->params]);
+            call_user_func($route->getAction(), ...[...$route->getOption('parameters'), ...self::$params]);
             return;
         }
 
-        call_user_func($route->getAction(), ...$this->params);
+        call_user_func($route->getAction(), ...self::$params);
     }
 
-    public function start(\Closure $errors = null): void
+    public static function start(\Closure $errors = null): void
     {
         try {
-            $this->execute($this->find());
+            self::execute(self::find());
         } catch (\Exception $e) {
             if ($errors)
                 call_user_func($errors, $e);
@@ -127,34 +126,34 @@ class Router
         //dump(["params" => $this->params, ...self::$routes, "currentUri" => $this->getCurrentUri(), "currentRequestMethod" => $this->getCurrentRequestMethod()]);
     }
 
-    public function addWildcards(array $wildcards): void
+    public static function addWildcards(array $wildcards): void
     {
         foreach ($wildcards as $key => $value)
-            $this->wildcards->add($key, $value);
+            RouteWildcard::add($key, $value);
     }
 
-    public function get(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function get(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return $this->match('get', $uri, $callback, $routeOptions);
+        return self::match('get', $uri, $callback, $routeOptions);
     }
 
-    public function post(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function post(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return $this->match('post', $uri, $callback, $routeOptions);
+        return self::match('post', $uri, $callback, $routeOptions);
     }
 
-    public function put(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function put(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return $this->match('put', $uri, $callback, $routeOptions);
+        return self::match('put', $uri, $callback, $routeOptions);
     }
 
-    public function patch(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function patch(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return $this->match('patch', $uri, $callback, $routeOptions);
+        return self::match('patch', $uri, $callback, $routeOptions);
     }
 
-    public function delete(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function delete(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return $this->match('delete', $uri, $callback, $routeOptions);
+        return self::match('delete', $uri, $callback, $routeOptions);
     }
 }

@@ -2,23 +2,23 @@
 
 namespace core\library\router;
 
-class RouteWildcard
+abstract class RouteWildcard
 {
-    private array $wildcards = [
+    private static array $wildcards = [
         "num" => "[0-9]+",
         "alpha" => "[a-z]+",
         "any" => "[a-z0-9\-]+",
     ];
 
-    public function add(string $name, string $pattern): void
+    public static function add(string $name, string $pattern): void
     {
-        if (!in_array($name, $this->wildcards))
-            $this->wildcards[$name] = $pattern;
+        if (!in_array($name, self::$wildcards))
+            self::$wildcards[$name] = $pattern;
     }
 
-    public function get(): array
+    public static function get(): array
     {
-        return $this->wildcards;
+        return self::$wildcards;
     }
 
 }

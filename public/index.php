@@ -7,21 +7,21 @@ use core\library\router\Router;
 
 require ("../vendor/autoload.php");
 
-$router = new Router("app\\controllers\\");
+Router::setDefaultNamespace("app\\controllers\\");
 
-$router->get("/{:?num}", "HomeController@index")->name("home")->middlewares([Auth::class]);
+Router::get("/{:?num}", "HomeController@index")->name("home")->middlewares([Auth::class]);
 
-$router->group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function (Router $router) {
-    $router->get("/", function () {
+Router::group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function () {
+    Router::get("/", function () {
         echo "home admin";
     }, ["name" => "home"]);
-    $router->get("/user", function () {
+    Router::get("/user", function () {
         echo "user admin";
     })->name("user")->middlewares([Teste::class]);
 });
 
-$router->get("/teste", function () {
+Router::get("/teste", function () {
     echo "teste";
 })->name("teste");
 
-$router->start();
+Router::start();

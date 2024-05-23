@@ -13,8 +13,7 @@ class Route
         private string $method,
         private string $uri,
         private \Closure|string $callback,
-        private array $routeOptions,
-        private array $wildcards
+        private array $routeOptions
     ) {
         $this->path = $this->getOption("prefix") ? "/" . trim($this->getOption("prefix"), "/") . $this->uri : $this->uri;
         $this->filterRouteOptions();
@@ -38,7 +37,7 @@ class Route
 
     private function parseRoute(): void
     {
-        foreach ($this->wildcards as $key => $value) {
+        foreach (RouteWildcard::get() as $key => $value) {
             $search = "{:$key}";
             if (str_contains($this->uri, $search))
                 $this->uri = str_replace($search, $value, $this->uri);
