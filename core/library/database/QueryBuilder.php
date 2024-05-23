@@ -20,7 +20,7 @@ class QueryBuilder
 
     public function select(array $fields = ["*"]): QueryBuilder
     {
-        $fields = "{$this->table}.".implode(", {$this->table}.", $fields);
+        $fields = "{$this->table}." . implode(", {$this->table}.", $fields);
         $this->query["fields"] = $fields;
         $this->query["select"] = "select {$fields} from {$this->table} ";
         return $this;
@@ -73,7 +73,7 @@ class QueryBuilder
 
     public function innerJoin(string $table, array $fields): QueryBuilder
     {
-        $fields = $this->query["fields"].", {$table}.".implode(", {$table}.", $fields);
+        $fields = $this->query["fields"] . ", {$table}." . implode(", {$table}.", $fields);
         $this->query["select"] = "select {$fields} from {$this->table} ";
         $this->query["join"] = " inner join {$table}";
         $this->query["joinTable"] = $table;
@@ -82,7 +82,7 @@ class QueryBuilder
 
     public function leftJoin(string $table, array $fields): QueryBuilder
     {
-        $fields = $this->query["fields"].", {$table}.".implode(", {$table}.", $fields);
+        $fields = $this->query["fields"] . ", {$table}." . implode(", {$table}.", $fields);
         $this->query["select"] = "select {$fields} from {$this->table} ";
         $this->query["join"] = " left join {$table}";
         $this->query["joinTable"] = $table;
@@ -91,7 +91,7 @@ class QueryBuilder
 
     public function rightJoin(string $table, array $fields): QueryBuilder
     {
-        $fields = $this->query["fields"].", {$table}.".implode(", {$table}.", $fields);
+        $fields = $this->query["fields"] . ", {$table}." . implode(", {$table}.", $fields);
         $this->query["select"] = "select {$fields} from {$this->table} ";
         $this->query["join"] = " right join {$table}";
         $this->query["joinTable"] = $table;
@@ -165,25 +165,13 @@ class QueryBuilder
             $alias = "";
             $values = [];
             foreach ($value as $key => $item) {
-                if (!isset($this->query["binds"][is_int($key) ? "val{$key}" : $key])) {
-                    $alias .= is_int($key) ? ":val{$key}, " : ":{$key}, ";
-                    $this->query["binds"][is_int($key) ? "val{$key}" : $key] = $item;
-                } else {
-                    $i = uniqid();
-                    $alias .= is_int($key) ? ":val{$key}{$i}, " : ":{$key}{$i}, ";
-                    $this->query["binds"][is_int($key) ? "val{$key}{$i}" : "{$key}{$i}"] = $item;
-                }
+                $alias .= "?, ";
+                $this->query["binds"][] = $item;
             }
             $alias = "(" . rtrim($alias, ", ") . ")";
         } else {
-            if (!isset($this->query["binds"][$field])) {
-                $alias = ":{$field}";
-                $this->query["binds"][$field] = $value;
-            } else {
-                $i = uniqid();
-                $alias = ":{$field}{$i}";
-                $this->query["binds"]["{$field}{$i}"] = $value;
-            }
+            $alias = "?";
+            $this->query["binds"][] = $value;
         }
 
         return $alias;
@@ -199,8 +187,8 @@ class QueryBuilder
             "offset" => "",
             "order" => "",
             "group" => "",
-            "join"=> "",
-            "on"=> "",
+            "join" => "",
+            "on" => "",
         ], $this->query));
         return "{$query}{$select}{$join}{$on}{$where}{$group}{$order}{$limit}{$offset}";
     }

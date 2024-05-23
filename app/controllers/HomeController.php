@@ -24,7 +24,7 @@ class HomeController
 
 
         // $query = QueryBuilder::table("users");
-        // dump($query->select()->rightJoin("posts", ["title", "content"])->on("id", "=","user_id")->where("id", ">", "5")->fetchAll());
+        // dump($query->select()->where("id", ">=", 5)->andWhere("id", "<=", 10)->fetchAll());
         // echo $query->paginateLinks;
     }
 

@@ -84,7 +84,7 @@ abstract class DBLayer
 
         $model = new $model;
         if (!$model instanceof DBLayer)
-            throw new \Exception("Model {$model} needs to implement the " . DBLayer::class . "!");
+            throw new \Exception("Model {$model} needs to extends the " . DBLayer::class . "!");
 
         if (!$this->results)
             throw new \Exception("Unable to create relationship, no records found!");
