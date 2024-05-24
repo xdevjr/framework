@@ -17,7 +17,7 @@ Router::group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [A
     }, ["name" => "home"]);
     Router::get("/user", function () {
         echo "user admin";
-    })->name("user")->middlewares([Teste::class]);
+    })->name("user")->middlewares([]);
 });
 
 Router::get("/teste", function () {

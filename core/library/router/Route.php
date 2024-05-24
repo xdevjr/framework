@@ -122,9 +122,12 @@ class Route
         return $this;
     }
 
-    public function middlewares(array $middlewares): static
+    public function middlewares(array $middlewares, bool $overwrite = true): static
     {
-        $this->routeOptions["middlewares"] = $middlewares;
+        if ($overwrite)
+            $this->routeOptions["middlewares"] = $middlewares;
+        else
+            $this->routeOptions["middlewares"] = array_merge($this->routeOptions["middlewares"], array_diff($middlewares, $this->routeOptions["middlewares"]));
         return $this;
     }
 
