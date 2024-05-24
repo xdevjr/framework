@@ -77,7 +77,7 @@ abstract class DBLayer
         return $this->results ?? null;
     }
 
-    public function relationWith(string $model, string $relationField, string $findField = "id", string $alias = "relation"): static
+    public function relationWith(string $model, string $foreignKey, string $localKey = "id", string $alias = "relation"): static
     {
         if (!class_exists($model))
             throw new \Exception("Model {$model} does not exist!");
@@ -90,13 +90,13 @@ abstract class DBLayer
             throw new \Exception("Unable to create relationship, no records found!");
 
         if (is_array($this->results)) {
-            $value = array_column($this->results, $findField);
-            $finds = $model->find($value, $relationField, "in")->getResult();
+            $value = array_column($this->results, $localKey);
+            $finds = $model->find($value, $foreignKey, "in")->getResult();
 
             if ($finds) {
                 foreach ($this->results as $result) {
                     foreach ($finds as $find) {
-                        if ($find->$relationField == $result->$findField)
+                        if ($find->$foreignKey == $result->$localKey)
                             $result->$alias[] = $find;
                     }
 
@@ -109,7 +109,7 @@ abstract class DBLayer
                 return $value;
             }, $relations);
         } else {
-            $this->results->$alias = $model->find($this->results->$findField, $relationField)->getResult();
+            $this->results->$alias = $model->find($this->results->$localKey, $foreignKey)->getResult();
         }
 
         return $this;
