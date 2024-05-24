@@ -20,7 +20,8 @@ class HomeController
             "password" => $faker->password,
         ]);
         
-        dump($user->getModel()->all()->relationWith(Post::class, "user_id", alias: "posts")->getResult());
+        dump($user->getModel()->all()->paginate($links, 3, $page, "/")->relationWith(Post::class, "user_id", alias: "posts")->getResult());
+        echo $links;
 
 
         // $query = QueryBuilder::table("users");

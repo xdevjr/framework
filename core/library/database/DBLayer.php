@@ -7,6 +7,7 @@ abstract class DBLayer
 
     protected string $table;
     protected array|Entity|null $results = null;
+    protected ?QueryBuilder $query = null;
 
     public function __construct(
         public ?Entity $entity = null
@@ -32,21 +33,29 @@ abstract class DBLayer
     }
     public function all(array $fields = ["*"]): static
     {
-        $result = $this->getQueryBuilder()->select($fields)->fetchAll($this->getEntity());
-        $this->results = $result;
+        $this->query = $this->getQueryBuilder()->select($fields);
+        $this->results = $this->query->fetchAll($this->getEntity());
         return $this;
     }
 
     public function find(string|array $value, string $by = "id", string $operator = "=", array $fields = ["*"]): static
     {
-        $query = $this->getQueryBuilder()->select($fields)->where($by, $operator, $value);
-        if ($query->rowCount() > 1) {
-            $result = $query->fetchAll($this->getEntity());
+        $this->query = $this->getQueryBuilder()->select($fields)->where($by, $operator, $value);
+        if ($this->query->rowCount() > 1) {
+            $result = $this->query->fetchAll($this->getEntity());
         } else {
-            $result = $query->fetch($this->getEntity());
+            $result = $this->query->fetch($this->getEntity());
         }
         if ($result)
             $this->results = $result;
+
+        return $this;
+    }
+
+    public function paginate(&$paginateLinks, int $limit, int $currentPage, $link = "?page=", $maxLinksPerPage = 5)
+    {
+        $this->results = $this->query->paginate($limit, $currentPage, $link, $maxLinksPerPage)->fetchAll($this->getEntity());
+        $paginateLinks = $this->query->paginateLinks;
 
         return $this;
     }
@@ -107,7 +116,7 @@ abstract class DBLayer
                 if (isset ($value->$alias) and count($value->$alias) == 1)
                     $value->$alias = $value->$alias[0];
                 return $value;
-            }, $relations);
+            }, $relations ?? $this->results);
         } else {
             $this->results->$alias = $model->find($this->results->$localKey, $foreignKey)->getResult();
         }
