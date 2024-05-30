@@ -93,10 +93,11 @@ class Route
                 if (!class_exists($middleware))
                     throw new \Exception("O middleware {$middleware} não foi encontrado!", 501);
 
-                if (!new $middleware instanceof MiddlewareInterface)
+                $middleware = new $middleware;
+                if (!$middleware instanceof MiddlewareInterface)
                     throw new \Exception("O middleware {$middleware} deve implementar o " . MiddlewareInterface::class, 501);
 
-                call_user_func([new $middleware, "execute"]);
+                call_user_func([$middleware, "execute"]);
             }
         }
     }
