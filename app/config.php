@@ -1,20 +1,23 @@
 <?php
+use core\library\database\Connection;
+use core\library\database\DBLayer;
+use core\library\database\Entity;
 
-const CONNECTION = [
+Connection::set([
     "driver" => "mysql",
     "host" => "localhost",
     "dbname" => "framework",
     "username" => "root",
     "password" => "",
-    "port"=> "",
-    "file"=> "",
+    "port" => "",
+    "file" => "",
     "options" => [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
         PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8;SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"
     ]
-];
+]);
 
-const ENTITY_NAMESPACE = "app\\database\\entities\\";
+DBLayer::setEntityNamespace("app\\database\\entities\\");
 
-const MODEL_NAMESPACE = "app\\database\\models\\";
+Entity::setModelNamespace("app\\database\\models\\");

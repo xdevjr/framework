@@ -8,10 +8,16 @@ abstract class DBLayer
     protected string $table;
     protected array|Entity|null $results = null;
     protected ?QueryBuilder $query = null;
+    protected static string $entityNamespace = "app\\database\\entities\\";
 
     public function __construct(
         public ?Entity $entity = null
     ) {
+    }
+
+    public static function setEntityNamespace(string $namespace): void
+    {
+        self::$entityNamespace = $namespace;
     }
 
     public function getQueryBuilder(): QueryBuilder
@@ -22,7 +28,7 @@ abstract class DBLayer
     private function getEntity(): string
     {
         $reflect = new \ReflectionClass(static::class);
-        $entity = ENTITY_NAMESPACE . $reflect->getShortName() . "Entity";
+        $entity = self::$entityNamespace . $reflect->getShortName() . "Entity";
         if (!class_exists($entity)) {
             throw new \Exception("Entity {$entity} does not exist!");
         } elseif (!new $entity instanceof Entity) {
@@ -113,7 +119,7 @@ abstract class DBLayer
                 }
             }
             $this->results = array_map(function ($value) use ($alias) {
-                if (isset ($value->$alias) and count($value->$alias) == 1)
+                if (isset($value->$alias) and count($value->$alias) == 1)
                     $value->$alias = $value->$alias[0];
                 return $value;
             }, $relations ?? $this->results);
