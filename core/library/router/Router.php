@@ -111,6 +111,13 @@ abstract class Router
         call_user_func($route->getAction(), ...self::$params);
     }
 
+        /**
+     * Starts the execution of the application by finding the appropriate route and executing it.
+     *
+     * @param \Closure|null $errors A closure that will be called if an exception occurs during execution. Receives the exception as a parameter.
+     * @throws \Exception If a route is not found or if the request method is not supported.
+     * @return void
+     */
     public static function start(\Closure $errors = null): void
     {
         try {
