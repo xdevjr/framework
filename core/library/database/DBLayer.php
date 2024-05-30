@@ -58,10 +58,10 @@ abstract class DBLayer
         return $this;
     }
 
-    public function paginate(&$paginateLinks, int $limit, int $currentPage, $link = "?page=", $maxLinksPerPage = 5)
+    public function paginate(&$paginator, int $limit, int $currentPage, $link = "?page=", $maxLinksPerPage = 5)
     {
         $this->results = $this->query->paginate($limit, $currentPage, $link, $maxLinksPerPage)->fetchAll($this->getEntity());
-        $paginateLinks = $this->query->paginateLinks;
+        $paginator = $this->query->paginator;
 
         return $this;
     }

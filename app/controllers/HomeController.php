@@ -19,9 +19,9 @@ class HomeController
             "email" => $faker->email,
             "password" => $faker->password,
         ]);
-        
+
         dump($user->getModel()->all()->paginate($links, 3, $page, "/")->relationWith(Post::class, "user_id", alias: "posts")->getResult());
-        echo $links;
+        echo $links->generateLinks(false);
 
 
         // $query = QueryBuilder::table("users");

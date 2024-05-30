@@ -8,7 +8,7 @@ class QueryBuilder
 {
     private ?\PDO $connection = null;
     private array $query = [];
-    public ?string $paginateLinks = null;
+    public ?Paginator $paginator = null;
 
     public function __construct(private string $table)
     {
@@ -199,7 +199,7 @@ class QueryBuilder
 
         $this->limit($paginate->getLimit());
         $this->offset($paginate->getOffset());
-        $this->paginateLinks = $paginate->generateLinks();
+        $this->paginator = $paginate;
 
         return $this;
     }

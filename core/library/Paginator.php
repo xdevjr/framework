@@ -4,14 +4,6 @@ namespace core\library;
 
 class Paginator
 {
-
-    private array $classes = [
-        "ul" => "pagination",
-        "li" => "page-item",
-        "a" => "page-link",
-        "active" => "page-item active",
-    ];
-
     public function __construct(
         private int $currentPage,
         private int $itemsPerPage,
@@ -36,42 +28,22 @@ class Paginator
         return (int) ceil($this->totalItems / $this->itemsPerPage);
     }
 
-    public function setClasses(string $ul, string $li, string $a, string $active): void
+    public function generateLinks(bool $array = true): array|string
     {
-        $this->classes = [
-            "ul" => $ul,
-            "li" => $li,
-            "a" => $a,
-            "active" => $active,
-        ];
-    }
-
-    public function generateLinks(): string
-    {
-        $html = "<nav>
-                            <ul class='{$this->classes['ul']}'>
-                            <li class='{$this->classes['li']}'>
-                                <a href='{$this->link}1' class='{$this->classes['a']}'>Primeira</a>
-                            </li>";
+        $links[] = "<a href='{$this->link}1'>Primeira</a>";
 
         $startLink = max(1, $this->currentPage - floor($this->maxLinksPerPage / 2));
         $endLink = min($startLink + $this->maxLinksPerPage - 1, $this->getTotalPages());
         for ($i = $startLink; $i <= $endLink; $i++) {
-            if ($i == $this->currentPage) {
-                $html .= "<li class='{$this->classes['active']}'>
-                                    <a class='{$this->classes['a']}'>{$this->currentPage}</a>
-                                </li>";
+            if($i == $this->currentPage){
+                $links[] = "<span>{$i}</span>";
             } else {
-                $html .= "<li class='{$this->classes['li']}'><a class='{$this->classes['a']}' href='{$this->link}{$i}'>{$i}</a></li>";
+                $links[] = "<a href='{$this->link}{$i}'>{$i}</a>";
             }
         }
 
-        $html .= "<li class='{$this->classes['li']}'>
-                                <a class='{$this->classes['a']}' href='{$this->link}{$this->getTotalPages()}'>Ultima</a>
-                            </li>
-                            </ul>
-                        </nav>";
+        $links[] = "<a href='{$this->link}{$this->getTotalPages()}'>Ultima</a>";
 
-        return $html;
+        return $array ? $links : "<nav>" . implode($links) . "</nav>";
     }
 }
