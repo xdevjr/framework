@@ -10,12 +10,14 @@ class QueryBuilder
     private array $query = [];
     public ?Paginator $paginator = null;
 
-    public function __construct(private string $table)
-    {
+    public function __construct(
+        private string $table,
+        private string $db
+    ) {
     }
-    public static function table(string $table): QueryBuilder
+    public static function table(string $table, string $db): QueryBuilder
     {
-        return new static($table);
+        return new static($table, $db);
     }
 
     public function select(array $fields = ["*"]): QueryBuilder
@@ -211,17 +213,17 @@ class QueryBuilder
 
     public function beginTransaction(): bool
     {
-        return Connection::get()->beginTransaction();
+        return Connection::get($this->db)->beginTransaction();
     }
 
     public function commit(): bool
     {
-        return Connection::get()->commit();
+        return Connection::get($this->db)->commit();
     }
 
     public function rollBack(): bool
     {
-        return Connection::get()->rollBack();
+        return Connection::get($this->db)->rollBack();
     }
 
     public function reset(): QueryBuilder
@@ -234,7 +236,7 @@ class QueryBuilder
 
     public function execute(): bool|\PDOStatement
     {
-        $this->connection = Connection::get();
+        $this->connection = Connection::get($this->db);
         $stmt = $this->connection->prepare($this->getQuery());
         if ($stmt->execute($this->getBinds())) {
             return $stmt;

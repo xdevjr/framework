@@ -6,6 +6,7 @@ abstract class DBLayer
 {
 
     protected string $table;
+    protected string $db = "default";
     protected array|Entity|null $results = null;
     protected ?QueryBuilder $query = null;
     protected static string $entityNamespace = "app\\database\\entities\\";
@@ -22,7 +23,7 @@ abstract class DBLayer
 
     public function getQueryBuilder(): QueryBuilder
     {
-        return QueryBuilder::table($this->table);
+        return QueryBuilder::table($this->table, $this->db);
     }
 
     private function getEntity(): string
