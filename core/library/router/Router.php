@@ -91,8 +91,6 @@ abstract class Router
 
                     return $route;
                 }
-
-                throw new \Exception("Método não disponível para essa rota!", 405);
             }
         }
 

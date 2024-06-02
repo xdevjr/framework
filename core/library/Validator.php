@@ -197,7 +197,7 @@ class Validator
         return false;
     }
 
-    public function alphanumspecial(string $field, mixed $value): bool
+    private function alphanumspecial(string $field, mixed $value): bool
     {
         if (is_string($value) and preg_match("/^[A-zÀ-û0-9[:punct:]]+$/", $value))
             return true;
@@ -226,7 +226,7 @@ class Validator
 
     private function min(string $field, mixed $value, array $params): bool
     {
-        if ($value >= $params[0])
+        if (strlen($value) >= $params[0])
             return true;
 
         $this->addMessage($field, "O campo {$field} não pode ser menor que {$params[0]}!", __FUNCTION__);
@@ -235,7 +235,7 @@ class Validator
 
     private function max(string $field, mixed $value, array $params): bool
     {
-        if ($value <= $params[0])
+        if (strlen($value) <= $params[0])
             return true;
 
         $this->addMessage($field, "O campo {$field} não pode ser maior que {$params[0]}!", __FUNCTION__);
