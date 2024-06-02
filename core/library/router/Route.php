@@ -56,7 +56,8 @@ class Route
 
     public function getRegex(): string
     {
-        return '/^' . str_replace('/', '\/', rtrim($this->getOption("customRegex") ?? $this->uri, "/")) . '$/';
+        $uri = rtrim($this->getOption("customRegex") ?? $this->uri, "/") ?: "/";
+        return '/^' . str_replace('/', '\/', $uri) . '$/';
     }
 
     public function getAction(): array|\Closure
