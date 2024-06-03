@@ -6,6 +6,7 @@ namespace core\library\database;
 abstract class Entity
 {
     protected static string $modelNamespace = "app\\database\\models\\";
+    protected static ?DBLayer $model = null;
 
     public static function setModelNamespace(string $namespace): void
     {
@@ -31,7 +32,11 @@ abstract class Entity
 
     public function getModel(): DBLayer
     {
-        $model = self::$modelNamespace . str_replace("Entity", "", (new \ReflectionClass(static::class))->getShortName());
-        return new $model($this);
+        if (!self::$model) {
+            $model = self::$modelNamespace . str_replace("Entity", "", (new \ReflectionClass(static::class))->getShortName());
+            self::$model = new $model($this);
+        }
+
+        return self::$model;
     }
 }

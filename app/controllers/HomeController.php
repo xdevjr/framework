@@ -23,6 +23,8 @@ class HomeController
         dump($user->getModel()->all()->paginate($links, 3, $page, "/")->relationWith(Post::class, "user_id", alias: "posts")->getResult());
         echo $links->generateLinks(false);
 
+        dump(validate()->fromValue("1.2", "float"));
+
 
         // $query = QueryBuilder::table("users");
         // dump($query->select()->where("id", ">=", 5)->andWhere("id", "<=", 10)->fetchAll());

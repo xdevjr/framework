@@ -8,12 +8,12 @@ class QueryBuilder
 {
     private ?\PDO $connection = null;
     private array $query = [];
-    public ?Paginator $paginator = null;
 
     public function __construct(
         private string $table,
         private string $db
     ) {
+        $this->connection = Connection::get($this->db);
     }
     public static function table(string $table, string $db): QueryBuilder
     {
@@ -22,6 +22,7 @@ class QueryBuilder
 
     public function select(array $fields = ["*"]): QueryBuilder
     {
+        $this->reset();
         $fields = "{$this->table}." . implode(", {$this->table}.", $fields);
         $this->query["fields"] = $fields;
         $this->query["select"] = "select {$fields} from {$this->table} ";
@@ -120,6 +121,7 @@ class QueryBuilder
 
     public function insert(array $data): bool|string
     {
+        $this->reset();
         $alias = $this->setBindsAndGetAlias($this->table, $data);
         $this->query["query"] = "insert into {$this->table} (" . implode(",", array_keys($data)) . ") values {$alias}";
         $this->execute();
@@ -128,6 +130,7 @@ class QueryBuilder
 
     public function update(array $data, string $whereField, string $whereOperator, string|int|array $whereValue): int
     {
+        $this->reset();
         $alias = $this->setUpdate($data);
         $whereAlias = $whereOperator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($whereField, $whereValue), "()")) : $this->setBindsAndGetAlias($whereField, $whereValue);
         $this->query["query"] = "update {$this->table} set {$alias} where {$whereField} {$whereOperator} {$whereAlias}";
@@ -136,6 +139,7 @@ class QueryBuilder
 
     public function delete(string $whereField, string $whereOperator, string|int|array $whereValue): int
     {
+        $this->reset();
         $whereAlias = $whereOperator == "between" ? str_replace(",", " and", trim($this->setBindsAndGetAlias($whereField, $whereValue), "()")) : $this->setBindsAndGetAlias($whereField, $whereValue);
         $this->query["query"] = "delete from {$this->table} where {$whereField} {$whereOperator} {$whereAlias}";
         return $this->execute()->rowCount();
@@ -143,6 +147,7 @@ class QueryBuilder
 
     public function query(string $query, array $binds = [])
     {
+        $this->reset();
         $this->query["query"] = $query;
         $this->query["binds"] = $binds;
         return $this;
@@ -152,8 +157,8 @@ class QueryBuilder
     {
         $set = "";
         foreach ($data as $key => $value) {
-            $set .= "{$key} = :{$key}, ";
-            $this->query["binds"][$key] = $value;
+            $set .= "{$key} = ?, ";
+            $this->query["binds"][] = $value;
         }
 
         $set = rtrim($set, ", ");
@@ -195,13 +200,13 @@ class QueryBuilder
         return "{$query}{$select}{$join}{$on}{$where}{$group}{$order}{$limit}{$offset}";
     }
 
-    public function paginate(int $limit, int $currentPage = 1, string $link = "?page=", int $maxLinksPerPage = 5)
+    public function paginate(&$paginator, int $limit, int $currentPage = 1, string $link = "?page=", int $maxLinksPerPage = 5)
     {
         $paginate = new Paginator($currentPage, $limit, $this->rowCount(), $link, $maxLinksPerPage);
 
         $this->limit($paginate->getLimit());
         $this->offset($paginate->getOffset());
-        $this->paginator = $paginate;
+        $paginator = $paginate;
 
         return $this;
     }
@@ -213,30 +218,26 @@ class QueryBuilder
 
     public function beginTransaction(): bool
     {
-        return Connection::get($this->db)->beginTransaction();
+        return $this->connection->beginTransaction();
     }
 
     public function commit(): bool
     {
-        return Connection::get($this->db)->commit();
+        return $this->connection->commit();
     }
 
     public function rollBack(): bool
     {
-        return Connection::get($this->db)->rollBack();
+        return $this->connection->rollBack();
     }
 
-    public function reset(): QueryBuilder
+    public function reset(): void
     {
         $this->query = [];
-        $this->paginateLinks = null;
-
-        return $this;
     }
 
     public function execute(): bool|\PDOStatement
     {
-        $this->connection = Connection::get($this->db);
         $stmt = $this->connection->prepare($this->getQuery());
         if ($stmt->execute($this->getBinds())) {
             return $stmt;

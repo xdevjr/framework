@@ -45,10 +45,10 @@ abstract class Router
                     if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i] ?? ""))
                         $explodePath[array_keys($diff)[$i]] = $parameters[$i];
                     else
-                        throw new \Exception('O tipo do parâmetro não corresponde ao necessário!');
+                        throw new \Exception('The parameter type does not match what is required!');
                 }
             } else {
-                throw new \Exception('A quantidade de parâmetros deve ser: ' . count($diff) . ', você passou: ' . count($parameters) . '!');
+                throw new \Exception('The number of parameters must be: ' . count($diff) . ', you passed: ' . count($parameters) . '!');
             }
 
             $url = implode('/', $explodePath);
@@ -94,7 +94,7 @@ abstract class Router
             }
         }
 
-        throw new \Exception("Rota não encontrada!", 404);
+        throw new \Exception("Route not found!", 404);
     }
 
     private static function execute(Route $route): void

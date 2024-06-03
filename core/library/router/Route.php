@@ -67,7 +67,7 @@ class Route
             $controller = $this->getNamespace() . $controller;
 
             if (!class_exists($controller) || !method_exists($controller, $method))
-                throw new \Exception("O controller {$controller} ou método {$method} não foram encontrados!", 501);
+                throw new \Exception("Controller {$controller} or method {$method} were not found!", 501);
 
             return [
                 new $controller,
@@ -84,7 +84,7 @@ class Route
 
         foreach ($this->routeOptions as $option => $value)
             if (!in_array($option, $validOptions))
-                throw new \Exception("Erro opção {$option} não é valida!");
+                throw new \Exception("Error option {$option} is not valid!");
     }
 
     public function executeMiddlewares(): void
@@ -92,11 +92,11 @@ class Route
         if ($middlewares = $this->getOption("middlewares")) {
             foreach ($middlewares as $middleware) {
                 if (!class_exists($middleware))
-                    throw new \Exception("O middleware {$middleware} não foi encontrado!", 501);
+                    throw new \Exception("The middleware {$middleware} was not found!", 501);
 
                 $middleware = new $middleware;
                 if (!$middleware instanceof MiddlewareInterface)
-                    throw new \Exception("O middleware {$middleware} deve implementar o " . MiddlewareInterface::class, 501);
+                    throw new \Exception("The {$middleware} middleware needs to implement the " . MiddlewareInterface::class, 501);
 
                 call_user_func([$middleware, "execute"]);
             }
