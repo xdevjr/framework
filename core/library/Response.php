@@ -5,10 +5,15 @@ namespace core\library;
 class Response
 {
     public function __construct(
-        private mixed $body,
+        private mixed $body = null,
         private int $statusCode = 200,
         private array $headers = []
     ) {
+    }
+
+    public static function create(mixed $body = null, int $statusCode = 200, array $headers = []): Response
+    {
+        return new static($body, $statusCode, $headers);
     }
 
     private function getHeaders(): void
@@ -32,7 +37,7 @@ class Response
 
     public function redirect(string $url): void
     {
-        header("Location: $url", true, $this->statusCode);
+        header("Location: $url");
     }
 
 }

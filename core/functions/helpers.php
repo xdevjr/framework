@@ -15,12 +15,13 @@ function request(): Request
 
 function response(mixed $body, bool $json = false, int $statusCode = 200, array $headers = []): mixed
 {
-    return (new Response($body, $statusCode, $headers))->send($json);
+    return Response::create($body, $statusCode, $headers)->send($json);
 }
 
-function redirect(string $url, int $statusCode = 200): void
+function redirect(string $url): void
 {
-    (new Response(null, $statusCode))->redirect($url);
+    Response::create()->redirect($url);
+    exit;
 }
 
 function view(string $view, array $data = []): void
@@ -61,4 +62,28 @@ function slug(string $string): string
 function url(string $nameOrPath, array $parameters = [], array $getParameters = []): string
 {
     return Router::getUrl($nameOrPath, $parameters, $getParameters);
+}
+
+function flash(string $key, mixed $value, string $redirectTo = null): void
+{
+    session()->flash($key, $value);
+    if ($redirectTo)
+        redirect($redirectTo);
+}
+
+function flashArray(array $data, string $redirectTo = null): void
+{
+    session()->flashArray($data);
+    if ($redirectTo)
+        redirect($redirectTo);
+}
+
+function csrfCreateAndCheck(): void
+{
+    session()->createCsrfToken();
+    session()->checkCsrfToken();
+}
+function csrf(): string
+{
+    return '<input type="hidden" name="__csrf" value="' . session()->getCsrfToken() . '">';
 }

@@ -23,7 +23,15 @@ readonly class Request
         if (!property_exists($this, $request))
             throw new \Exception("Property {$request} not exist!");
 
-        $filter = filter_var_array(array_map('trim', array_map('strip_tags', $this->$request)));
+        $filter = filter_var_array(array_map(function($value) {
+            if (is_array($value)){
+                return array_map(function ($value) {
+                    return trim(strip_tags($value));
+                }, $value);
+            }
+
+            return trim(strip_tags($value));
+        }, $this->$request));
 
         return $array ? $filter : (object) $filter;
     }

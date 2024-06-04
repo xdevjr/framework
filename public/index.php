@@ -7,6 +7,8 @@ use core\library\router\Router;
 
 require ("../vendor/autoload.php");
 
+csrfCreateAndCheck();
+
 Router::setDefaultNamespace("app\\controllers\\");
 
 Router::get("/{:?num}", "HomeController@index")->name("home")->middlewares([Auth::class]);
