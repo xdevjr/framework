@@ -5,6 +5,7 @@ namespace core\library\database;
 abstract class Connection
 {
     private static ?\PDO $connection = null;
+    private static ?string $activeConnection = null;
     private static array $connParameters = [
         "default" => [
             "dsn" => "",
@@ -15,7 +16,8 @@ abstract class Connection
     ];
     public static function get(string $connection = "default"): \PDO
     {
-        if (!self::$connection) {
+        if (!self::$connection or self::$activeConnection !== $connection) {
+            self::$activeConnection = $connection;
             extract(self::$connParameters[$connection]);
             self::$connection = new \PDO($dsn, $username, $password, $options);
         }

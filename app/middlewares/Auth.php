@@ -2,9 +2,9 @@
 
 namespace app\middlewares;
 
-use core\interfaces\MiddlewareInterface;
+use core\interfaces\IMiddleware;
 
-class Auth implements MiddlewareInterface
+class Auth implements IMiddleware
 {
     public function execute()
     {

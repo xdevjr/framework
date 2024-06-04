@@ -2,7 +2,7 @@
 
 namespace core\interfaces;
 
-interface MiddlewareInterface
+interface IMiddleware
 {
     public function execute();
 }

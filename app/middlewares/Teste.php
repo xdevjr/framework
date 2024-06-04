@@ -2,11 +2,12 @@
 
 namespace app\middlewares;
 
-use core\interfaces\MiddlewareInterface;
+use core\interfaces\IMiddleware;
 
-class Teste implements MiddlewareInterface
+class Teste implements IMiddleware
 {
-    public function execute(){
+    public function execute()
+    {
         dump("teste middleware");
     }
 }

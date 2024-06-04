@@ -2,7 +2,7 @@
 
 namespace core\library\router;
 
-use core\interfaces\MiddlewareInterface;
+use core\interfaces\IMiddleware;
 
 class Route
 {
@@ -95,8 +95,8 @@ class Route
                     throw new \Exception("The middleware {$middleware} was not found!", 501);
 
                 $middleware = new $middleware;
-                if (!$middleware instanceof MiddlewareInterface)
-                    throw new \Exception("The {$middleware} middleware needs to implement the " . MiddlewareInterface::class, 501);
+                if (!$middleware instanceof IMiddleware)
+                    throw new \Exception("The {$middleware} middleware needs to implement the " . IMiddleware::class, 501);
 
                 call_user_func([$middleware, "execute"]);
             }
