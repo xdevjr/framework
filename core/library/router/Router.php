@@ -82,19 +82,22 @@ abstract class Router
 
     private static function find(): Route
     {
-        foreach (self::$routes as $route) {
-            if (preg_match($route->getRegex(), self::getCurrentUri())) {
-                if ($route->getMethod() === self::getCurrentRequestMethod()) {
-                    $explodeRoute = explode('/', ltrim(str_replace('(', '', $route->getUri()), '/'));
-                    $explodeCurrentUri = explode('/', ltrim(self::getCurrentUri(), '/'));
-                    self::$params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
+        $routes = array_filter(self::$routes, fn($route) => preg_match($route->getRegex(), self::getCurrentUri()));
 
-                    return $route;
-                }
-            }
-        }
+        if (!$routes)
+            throw new \Exception("Route not found!", 404);
 
-        throw new \Exception("Route not found!", 404);
+        $routes = array_filter($routes, fn($route) => $route->getMethod() === self::getCurrentRequestMethod());
+
+        if (!$routes)
+            throw new \Exception("Method not allowed for this route!", 405);
+
+        $route = $routes[0];
+        $explodeRoute = explode('/', ltrim($route->getPath(), '/'));
+        $explodeCurrentUri = explode('/', ltrim(self::getCurrentUri(), '/'));
+        self::$params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
+
+        return $route;
     }
 
     private static function execute(Route $route): void
