@@ -67,14 +67,15 @@ abstract class Router
 
     public static function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = []): ?Route
     {
-        self::$routeOptions["defaultNamespace"] = self::$defaultNamespace;
-        self::$routeOptions = array_merge(self::$routeOptions, $routeOptions);
+        $routeOptions["defaultNamespace"] = self::$defaultNamespace;
+        $routeOptions = array_merge(self::$routeOptions, $routeOptions);
+        $routeOptions = new RouteOptions(...$routeOptions);
 
         if (is_string($methods)) {
-            return self::$routes[] = new Route(strtolower($methods), $uri, $callback, self::$routeOptions);
+            return self::$routes[] = new Route(strtolower($methods), $uri, $callback, $routeOptions);
         } else if (is_array($methods)) {
             foreach ($methods as $method) {
-                self::$routes[] = new Route(strtolower($method), $uri, $callback, self::$routeOptions);
+                self::$routes[] = new Route(strtolower($method), $uri, $callback, $routeOptions);
             }
         }
         return null;
@@ -92,6 +93,7 @@ abstract class Router
         if (!$routes)
             throw new \Exception("Method not allowed for this route!", 405);
 
+        sort($routes);
         $route = $routes[0];
         $explodeRoute = explode('/', ltrim($route->getPath(), '/'));
         $explodeCurrentUri = explode('/', ltrim(self::getCurrentUri(), '/'));
@@ -103,13 +105,9 @@ abstract class Router
     private static function execute(Route $route): void
     {
         $route->executeMiddlewares();
+        $parameters = array_merge($route->getParameters(), self::$params);
 
-        if ($route->getOption('parameters')) {
-            call_user_func($route->getAction(), ...[...$route->getOption('parameters'), ...self::$params]);
-            return;
-        }
-
-        call_user_func($route->getAction(), ...self::$params);
+        call_user_func($route->getAction(), ...$parameters);
     }
 
     /**

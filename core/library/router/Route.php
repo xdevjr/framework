@@ -6,17 +6,16 @@ use core\interfaces\IMiddleware;
 
 class Route
 {
-    private ?string $routeName = null;
     private string $path;
 
     public function __construct(
         private string $method,
         private string $uri,
         private \Closure|string $callback,
-        private array $routeOptions
+        private RouteOptions $routeOptions
     ) {
-        $this->path = $this->getOption("prefix") ? "/" . trim($this->getOption("prefix"), "/") . $this->uri : $this->uri;
-        $this->filterRouteOptions();
+        $this->uri = $this->routeOptions->getOption("prefix") . $this->uri;
+        $this->path = $this->uri;
         $this->parseRoute();
     }
 
@@ -37,26 +36,19 @@ class Route
 
     private function parseRoute(): void
     {
-        foreach (RouteWildcard::get() as $key => $value) {
-            $search = "{:$key}";
-            if (str_contains($this->uri, $search))
-                $this->uri = str_replace($search, $value, $this->uri);
+        $search = array_map(fn($key) => "{:$key}", array_keys(RouteWildcard::get()));
+        $searchOptional = array_map(fn($key) => "{:?$key}", array_keys(RouteWildcard::get()));
+        $search = array_merge($search, $searchOptional);
+        $replace = array_values(RouteWildcard::get());
+        $replaceOptional = array_map(fn($key) => "?($key)?", $replace);
+        $replace = array_merge($replace, $replaceOptional);
 
-            $search = "/{:?$key}";
-            if (str_contains($this->uri, $search))
-                $this->uri = str_replace($search, "/?($value)?", $this->uri);
-        }
-
-        if ($this->getOption("prefix"))
-            $this->uri = "/" . trim($this->getOption("prefix"), "/") . $this->uri;
-
-        if ($this->getOption("name"))
-            $this->routeName = $this->getOption("groupName") ? $this->getOption("groupName") . "." . $this->getOption("name") : $this->getOption("name");
+        $this->uri = str_replace($search, $replace, $this->uri);
     }
 
     public function getRegex(): string
     {
-        $uri = rtrim($this->getOption("customRegex") ?? $this->uri, "/") ?: "/";
+        $uri = rtrim($this->routeOptions->getOption("customRegex") ?: $this->uri, "/") ?: "/";
         return '/^' . str_replace('/', '\/', $uri) . '$/';
     }
 
@@ -78,18 +70,9 @@ class Route
         return $this->callback;
     }
 
-    private function filterRouteOptions(): void
-    {
-        $validOptions = ["parameters", "prefix", "name", "groupName", "middlewares", "namespace", "defaultNamespace", "customRegex"];
-
-        foreach ($this->routeOptions as $option => $value)
-            if (!in_array($option, $validOptions))
-                throw new \Exception("Error option {$option} is not valid!");
-    }
-
     public function executeMiddlewares(): void
     {
-        if ($middlewares = $this->getOption("middlewares")) {
+        if ($middlewares = $this->routeOptions->getOption("middlewares")) {
             foreach ($middlewares as $middleware) {
                 if (!class_exists($middleware))
                     throw new \Exception("The middleware {$middleware} was not found!", 501);
@@ -103,45 +86,55 @@ class Route
         }
     }
 
-    public function getOption(string $option): mixed
-    {
-        return $this->routeOptions[$option] ?? null;
-    }
-
     public function getName(): string
     {
-        return $this->routeName;
+        return empty($this->routeOptions->getOption("groupName")) ? $this->routeOptions->getOption("name") : $this->routeOptions->getOption("groupName") . "." . $this->routeOptions->getOption("name");
     }
 
     private function getNamespace(): string
     {
-        return $this->getOption("namespace") ?? $this->getOption("defaultNamespace");
+        return $this->routeOptions->getOption("namespace") ?: $this->routeOptions->getOption("defaultNamespace");
+    }
+
+    public function getParameters(): array
+    {
+        return $this->routeOptions->getOption("parameters");
     }
 
     public function name(string $name): static
     {
-        $this->routeName = $this->getOption("groupName") ? $this->getOption("groupName") . "." . $name : $name;
+        $this->routeOptions->setOption("name", $name);
         return $this;
     }
 
-    public function middlewares(array $middlewares, bool $overwrite = true): static
+    public function middlewares(string ...$middlewares): static
     {
-        if ($overwrite)
-            $this->routeOptions["middlewares"] = $middlewares;
-        else
-            $this->routeOptions["middlewares"] = array_merge($this->routeOptions["middlewares"], array_diff($middlewares, $this->routeOptions["middlewares"]));
+        $this->routeOptions->setOption("middlewares", $middlewares);
+        return $this;
+    }
+
+    public function appendMiddlewares(string ...$middlewares): static
+    {
+        $middlewares = array_merge($this->routeOptions->getOption("middlewares"), $middlewares);
+        $this->routeOptions->setOption("middlewares", $middlewares);
         return $this;
     }
 
     public function namespace(string $namespace): static
     {
-        $this->routeOptions["namespace"] = $namespace;
+        $this->routeOptions->setOption("namespace", $namespace);
         return $this;
     }
 
     public function customRegex(string $regex): static
     {
-        $this->routeOptions["customRegex"] = $regex;
+        $this->routeOptions->setOption("customRegex", $regex);
+        return $this;
+    }
+
+    public function parameters(mixed ...$parameters): static
+    {
+        $this->routeOptions->setOption("parameters", $parameters);
         return $this;
     }
 
