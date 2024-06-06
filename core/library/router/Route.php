@@ -48,8 +48,9 @@ class Route
 
     public function getRegex(): string
     {
-        $uri = rtrim($this->routeOptions->getOption("customRegex") ?: $this->uri, "/") ?: "/";
-        return '/^' . str_replace('/', '\/', $uri) . '$/';
+        $uri = rtrim($this->uri, "/") ?: "/";
+        $uri = $this->routeOptions->getOption("customRegex") ?: str_replace('/', '\/', $uri);
+        return '/^' . $uri . '$/';
     }
 
     public function getAction(): array|\Closure
