@@ -20,7 +20,7 @@ class HomeController
             "password" => $faker->password,
         ]);
         
-        dump($user->getModel()->all()->paginate($links, 3, $page)->relationWith(Post::class, "user_id", alias: "posts")->getResult());
+        dump($user->getModel()->all()->paginate($links, 3, $page, url("home", [null]))->relationWith(Post::class, "user_id", alias: "posts")->getResult());
         echo $links->generateLinks(false);
 
 

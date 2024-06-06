@@ -14,7 +14,7 @@ class Route
         private \Closure|string $callback,
         private RouteOptions $routeOptions
     ) {
-        $this->uri = $this->routeOptions->getOption("prefix") . $this->uri;
+        $this->uri = $this->routeOptions->getOption("prefix") . "/" . ltrim($this->uri, "/");
         $this->path = $this->uri;
         $this->parseRoute();
     }
