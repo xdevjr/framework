@@ -131,7 +131,7 @@ abstract class Router
 
     }
 
-    public function debug(): void
+    public static function debug(): void
     {
         dump(["params" => self::$params, "routes" => self::$routes, "currentUri" => self::getCurrentUri(), "currentRequestMethod" => self::getCurrentRequestMethod()]);
     }
