@@ -25,4 +25,5 @@ Router::group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [A
 Router::get("/teste", function () {
     echo "teste";
 })->name("teste");
+
 Router::start();

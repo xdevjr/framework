@@ -16,7 +16,7 @@ abstract class Router
 
     private static function getCurrentUri(): string
     {
-        return $_SERVER['REQUEST_URI'] !== "/" ? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), "/") : "/";
+        return $_SERVER['REQUEST_URI'] !== "/" ? rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), "/") : "/";
     }
 
     private static function getCurrentRequestMethod(): string
@@ -129,7 +129,11 @@ abstract class Router
             exit;
         }
 
-        //dump(["params" => $this->params, ...self::$routes, "currentUri" => $this->getCurrentUri(), "currentRequestMethod" => $this->getCurrentRequestMethod()]);
+    }
+
+    public function debug(): void
+    {
+        dump(["params" => self::$params, "routes" => self::$routes, "currentUri" => self::getCurrentUri(), "currentRequestMethod" => self::getCurrentRequestMethod()]);
     }
 
     public static function addWildcards(array $wildcards): void
