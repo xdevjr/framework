@@ -32,10 +32,10 @@ abstract class Entity
         return $properties;
     }
 
-    public function getModel(): DBLayer
+    public function model(): DBLayer
     {
         if (!$this->model) {
-            $model = self::$modelNamespace . str_replace("Entity", "", (new \ReflectionClass(static::class))->getShortName());
+            $model = self::$modelNamespace . str_replace("Entity", "", (new \ReflectionClass($this))->getShortName());
             $this->model = new $model($this);
         }
 

@@ -30,20 +30,20 @@ class Paginator
 
     public function generateLinks(bool $array = true): array|string
     {
-        $links[] = "<a href='{$this->link}1'>Primeira</a>";
+        $links[] = "<a class='page-item' href='{$this->link}1'>Primeira</a>";
 
         $startLink = max(1, $this->currentPage - floor($this->maxLinksPerPage / 2));
         $endLink = min($startLink + $this->maxLinksPerPage - 1, $this->getTotalPages());
         for ($i = $startLink; $i <= $endLink; $i++) {
             if($i == $this->currentPage){
-                $links[] = "<span>{$i}</span>";
+                $links[] = "<span class='page-item active'>{$i}</span>";
             } else {
-                $links[] = "<a href='{$this->link}{$i}'>{$i}</a>";
+                $links[] = "<a class='page-item' href='{$this->link}{$i}'>{$i}</a>";
             }
         }
 
-        $links[] = "<a href='{$this->link}{$this->getTotalPages()}'>Ultima</a>";
+        $links[] = "<a class='page-item' href='{$this->link}{$this->getTotalPages()}'>Ultima</a>";
 
-        return $array ? $links : "<nav>" . implode($links) . "</nav>";
+        return $array ? $links : "<nav class='pagination'>" . implode($links) . "</nav>";
     }
 }

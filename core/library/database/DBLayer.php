@@ -2,19 +2,23 @@
 
 namespace core\library\database;
 
+use core\library\database\query\QB;
+use core\library\database\query\Select;
+
 abstract class DBLayer
 {
 
     protected string $table;
     protected string $db = "default";
-    protected ?QueryBuilder $queryBuilder = null;
+    protected ?QB $queryBuilder = null;
+    protected ?Select $currentSelect = null;
     protected array|Entity|null $results = null;
     protected static string $entityNamespace = "app\\database\\entities\\";
 
     public function __construct(
         public ?Entity $entity = null
     ) {
-        $this->queryBuilder = QueryBuilder::table($this->table, $this->db);
+        $this->queryBuilder = QB::create($this->table, $this->db);
     }
 
     public static function setEntityNamespace(string $namespace): void
@@ -22,7 +26,7 @@ abstract class DBLayer
         self::$entityNamespace = $namespace;
     }
 
-    public function getQueryBuilder(): QueryBuilder
+    public function queryBuilder(): QB
     {
         return $this->queryBuilder;
     }
@@ -39,20 +43,27 @@ abstract class DBLayer
 
         return $entity;
     }
-    public function all(array $fields = ["*"]): static
+
+    /**
+     * @param string[] $fields Default is ["*"]
+     */
+    public function all(string ...$fields): static
     {
-        $this->queryBuilder = $this->queryBuilder->select($fields);
-        $this->results = $this->queryBuilder->fetchAll($this->getEntity());
+        $this->currentSelect = $this->queryBuilder->select(...$fields);
+        $this->results = $this->currentSelect->fetchAll($this->getEntity());
         return $this;
     }
 
-    public function find(string|array $value, string $by = "id", string $operator = "=", array $fields = ["*"]): static
+    /**
+     * @param string[] $fields Default is ["*"]
+     */
+    public function find(array|int|string $value, string $by = "id", string $operator = "=", string ...$fields): static
     {
-        $this->queryBuilder = $this->queryBuilder->select($fields)->where($by, $operator, $value);
-        if ($this->queryBuilder->rowCount() > 1) {
-            $result = $this->queryBuilder->fetchAll($this->getEntity());
+        $this->currentSelect = $this->queryBuilder->select(...$fields)->where($by, $operator, $value);
+        if ($this->currentSelect->totalItems() > 1) {
+            $result = $this->currentSelect->fetchAll($this->getEntity());
         } else {
-            $result = $this->queryBuilder->fetch($this->getEntity());
+            $result = $this->currentSelect->fetchObject($this->getEntity());
         }
         if ($result)
             $this->results = $result;
@@ -60,35 +71,40 @@ abstract class DBLayer
         return $this;
     }
 
-    public function paginate(&$paginator, int $limit, int $currentPage, $link = "?page=", $maxLinksPerPage = 5)
+    /**
+     * @param &$paginator reference to paginator instance
+     */
+    public function paginate(&$paginator, int $itemsPerPage, int $currentPage, string $link = "?page=", int $maxLinksPerPage = 5): static
     {
-        $this->results = $this->queryBuilder->paginate($paginator, $limit, $currentPage, $link, $maxLinksPerPage)->fetchAll($this->getEntity());
+        if (!$this->currentSelect)
+            throw new \Exception("Please use all() or find() before paginate()!");
+
+        $this->results = $this->currentSelect->paginate($paginator, $itemsPerPage, $currentPage, $link, $maxLinksPerPage)->fetchAll($this->getEntity());
 
         return $this;
     }
 
-    public function save(): bool|string
+    public function insert(): bool
     {
         $properties = $this->entity->getProperties();
-        $result = $this->queryBuilder->insert($properties);
+        $result = $this->queryBuilder->insert($properties)->execute();
         return $result;
     }
 
-    public function update(string $findValue, string $findBy = "id"): int
+    public function update(array|int|string $value, string $field = "id", string $operator = "="): bool
     {
         $properties = $this->entity->getProperties();
-        $properties["updated_at"] = date("Y-m-d H:i:s.u");
-        $result = $this->queryBuilder->update($properties, $findBy, "=", $findValue);
+        $result = $this->queryBuilder->update($properties)->where($field, $operator, $value)->execute();
         return $result;
     }
 
-    public function delete(string $value, string $findBy = "id"): int
+    public function delete(array|int|string $value, string $field = "id", string $operator = "="): bool
     {
-        $result = $this->queryBuilder->delete($findBy, "=", $value);
+        $result = $this->queryBuilder->delete()->where($field, $operator, $value)->execute();
         return $result;
     }
 
-    public function getResult(): array|Entity|null
+    public function result(): array|Entity|null
     {
         return $this->results ?? null;
     }
@@ -107,7 +123,7 @@ abstract class DBLayer
 
         if (is_array($this->results)) {
             $value = array_column($this->results, $localKey);
-            $finds = $model->find($value, $foreignKey, "in")->getResult();
+            $finds = $model->find($value, $foreignKey, "in")->result();
 
             if ($finds) {
                 foreach ($this->results as $result) {
@@ -125,7 +141,7 @@ abstract class DBLayer
                 return $value;
             }, $relations ?? $this->results);
         } else {
-            $this->results->$alias = $model->find($this->results->$localKey, $foreignKey)->getResult();
+            $this->results->$alias = $model->find($this->results->$localKey, $foreignKey)->result();
         }
 
         return $this;

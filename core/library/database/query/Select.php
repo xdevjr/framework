@@ -118,6 +118,9 @@ class Select
         return $this;
     }
 
+    /**
+     * @param &$paginator reference to paginator instance
+     */
     public function paginate(&$paginator, int $limit, int $currentPage = 1, string $link = "?page=", int $maxLinksPerPage = 5): static
     {
         $totalItems = $this->totalItems();
@@ -171,12 +174,12 @@ class Select
 
     public function fetchObject(string $className = "stdClass"): ?object
     {
-        return $this->execute()->fetchObject($className);
+        return $this->execute()->fetchObject($className) ?: null;
     }
 
     public function fetch(int $fetchMode = \PDO::FETCH_ASSOC): ?array
     {
-        return $this->execute()->fetch($fetchMode);
+        return $this->execute()->fetch($fetchMode) ?: null;
     }
 
     public function fetchAll(string $className = "stdClass", int $fetchMode = \PDO::FETCH_CLASS): array

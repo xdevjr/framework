@@ -2,15 +2,19 @@
 
 namespace core\library\database\query;
 
+use core\library\database\Connection;
+
 class QB
 {
+    private ?\PDO $connection = null;
     public function __construct(
         private string $table,
-        private \PDO $connection
+        private string|\PDO $db = "default"
     ) {
+        $this->connection = $this->db instanceof \PDO ? $this->db : Connection::get($this->db);
     }
 
-    public static function create(string $table, \PDO $connection): static
+    public static function create(string $table, string|\PDO $connection = "default"): static
     {
         return new static($table, $connection);
     }
