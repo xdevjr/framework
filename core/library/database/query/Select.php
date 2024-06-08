@@ -184,7 +184,7 @@ class Select
         return $this->execute()->fetchAll($fetchMode, $className);
     }
 
-    public function totalItems()
+    public function totalItems(): int
     {
         $query = "select count(*) as total " . substr($this->getQuery(), strpos($this->getQuery(), "from"));
         $statement = $this->connection->prepare($query);

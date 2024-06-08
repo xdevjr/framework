@@ -125,7 +125,7 @@ abstract class Router
             if ($errors)
                 call_user_func($errors, $e);
             else
-                echo nl2br("Trace:\n{$e->getTraceAsString()}\n\n Erro: {$e->getMessage()} \nLine: {$e->getLine()} \nFile: {$e->getFile()}");
+                echo nl2br("<div style='background-color: #f00; border:1px solid #000; border-radius: 5px; padding: 0 20px; color: white; font-weight: bold; text-shadow: 1px 1px 1px rgba(0,0,0,.8); display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap;'><p>Erro: {$e->getMessage()} \nLine: {$e->getLine()} \nFile: {$e->getFile()}</p><p style='border-left: 2px solid #000; padding-left: 10px'>Trace:\n{$e->getTraceAsString()}</p></div>");
             exit;
         }
 

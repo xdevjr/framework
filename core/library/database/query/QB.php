@@ -37,4 +37,46 @@ class QB
     {
         return new Delete($this->table, $this->connection);
     }
+
+    public function beginTransaction(): bool
+    {
+        return $this->connection->beginTransaction();
+    }
+
+    public function commit(): bool
+    {
+        return $this->connection->commit();
+    }
+
+    public function rollBack(): bool
+    {
+        return $this->connection->rollBack();
+    }
+
+    /**
+     * @param \Closure $callback needs to return boolean, if false or exception transaction will be rolled back
+     * @return bool
+     * @throws \Exception
+     */
+    public function transaction(\Closure $callback): bool
+    {
+        if ($this->beginTransaction()) {
+            try {
+                $result = $callback($this);
+
+                if (!$result) {
+                    $this->rollBack();
+                    return $result;
+                }
+
+                $this->commit();
+                return $result;
+            } catch (\Exception $exception) {
+                $this->rollBack();
+                throw $exception;
+            }
+        }
+
+        return false;
+    }
 }

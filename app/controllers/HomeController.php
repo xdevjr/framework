@@ -27,7 +27,21 @@ class HomeController
 
 
 
-        // $query = QB::create("users", Connection::get());
+        $query = QB::create("userss", Connection::get());
+        dump($query->transaction(function (QB $query) use ($faker) {
+            return $query->update([
+                "firstName" => $faker->firstName,
+                "lastName" => $faker->lastName,
+                "email" => $faker->email,
+                "password" => $faker->password,
+            ])->where("id", "=", 40)->execute() && $query->update([
+                    "firstName" => $faker->firstName,
+                    "lastName" => $faker->lastName,
+                    "email" => $faker->email,
+                    "password" => $faker->password,
+                ])->where("id", "=", 41)->execute();
+        }));
+
         // dump($query->select()->paginate($paginator, 3, $page, "/")->fetchAll());
         // echo $paginator->generateLinks(false);
     }
