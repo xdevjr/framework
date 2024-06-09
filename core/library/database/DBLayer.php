@@ -72,7 +72,7 @@ abstract class DBLayer
     }
 
     /**
-     * @param &$paginator reference to paginator instance
+     * @param $paginator Reference to paginator instance
      */
     public function paginate(&$paginator, int $itemsPerPage, int $currentPage, string $link = "?page=", int $maxLinksPerPage = 5): static
     {

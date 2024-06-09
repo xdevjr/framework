@@ -26,9 +26,9 @@ class HomeController
         echo $links->generateLinks(false);
 
 
-
-        // $query = QB::create("users", Connection::get());
-        // dump($query->select()->paginate($paginator, 3, $page, "/")->fetchAll());
+        // $queryBuilder = QB::create("users", Connection::get());
+        // dump($queryBuilder->query("SELECT * FROM users")->fetchAll());
+        // dump($queryBuilder->select()->paginate($paginator, 3, $page, "/")->fetchAll());
         // echo $paginator->generateLinks(false);
     }
 

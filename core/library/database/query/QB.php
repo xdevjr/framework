@@ -42,6 +42,12 @@ class QB
         return new Delete($this->table, $this->connection);
     }
 
+    public function query(string $query, array $binds = []): bool|\PDOStatement
+    {
+        $statement = $this->connection->prepare($query);
+        $statement->execute($binds);
+        return $statement;
+    }
     public function beginTransaction(): bool
     {
         return $this->connection->beginTransaction();
