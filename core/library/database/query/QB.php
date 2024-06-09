@@ -6,12 +6,11 @@ use core\library\database\Connection;
 
 class QB
 {
-    private ?\PDO $connection = null;
     public function __construct(
         private string $table,
-        private string|\PDO $db = "default"
+        private string|\PDO $connection = "default"
     ) {
-        $this->connection = $this->db instanceof \PDO ? $this->db : Connection::get($this->db);
+        $this->connection = $this->connection instanceof \PDO ? $this->connection : Connection::get($this->connection);
     }
 
     public static function create(string $table, string|\PDO $connection = "default"): static

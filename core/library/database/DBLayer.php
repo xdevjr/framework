@@ -10,7 +10,7 @@ abstract class DBLayer
 
     protected string $table;
     protected string $db = "default";
-    protected ?QB $queryBuilder = null;
+    public ?QB $queryBuilder = null;
     protected ?Select $currentSelect = null;
     protected array|Entity|null $results = null;
     protected static string $entityNamespace = "app\\database\\entities\\";
@@ -24,11 +24,6 @@ abstract class DBLayer
     public static function setEntityNamespace(string $namespace): void
     {
         self::$entityNamespace = $namespace;
-    }
-
-    public function queryBuilder(): QB
-    {
-        return $this->queryBuilder;
     }
 
     private function getEntity(): string
