@@ -33,7 +33,7 @@ abstract class DBLayer
         if (!class_exists($entity)) {
             throw new \Exception("Entity {$entity} does not exist!");
         } elseif (!new $entity instanceof Entity) {
-            throw new \Exception("Entity {$entity} needs to implement the " . Entity::class . "!");
+            throw new \Exception("Entity {$entity} needs to extends the " . Entity::class . "!");
         }
 
         return $entity;
