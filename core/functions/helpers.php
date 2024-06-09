@@ -50,9 +50,16 @@ function validate(): Validator
     return new Validator();
 }
 
-function root(string $path = ""): string
+/**
+ * Get the root path of the project.
+ *
+ * @param string $path the optional relative path to be appended to the root path
+ * @return string the root path with the given path appended
+ */
+function root(string $path = null): string
 {
-    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . trim($path, "\/") . DIRECTORY_SEPARATOR;
+    $path = $path ? str_replace(["\\", "/"], DIRECTORY_SEPARATOR, trim($path, "\/")) . DIRECTORY_SEPARATOR : "";
+    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . $path;
 }
 
 function slug(string $string): string
