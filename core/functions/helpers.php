@@ -13,23 +13,27 @@ function request(): Request
     return Request::create();
 }
 
-function response(mixed $body, bool $json = false, int $statusCode = 200, array $headers = []): mixed
+/**
+ * @param array $headers example: ["Content-Type" => "application/json"]
+ * @param bool $json if set true the body will be json encoded and the content type header will be set
+ */
+function response(mixed $body, int $statusCode = 200, array $headers = [], bool $json = false): Response
 {
-    return Response::create($body, $statusCode, $headers)->send($json);
+    return new Response($body, $statusCode, $headers, $json);
 }
 
 function redirect(string $url): void
 {
-    Response::create()->redirect($url);
+    Response::redirect($url);
     exit;
 }
 
-function view(string $view, array $data = []): void
+function view(string $view, array $data = []): string
 {
     $loader = new FilesystemLoader(dirname(__DIR__, 2) . '/app/views');
     $twig = new Environment($loader);
 
-    echo $twig->render("$view.twig.php", $data);
+    return $twig->render("$view.twig.php", $data);
 }
 
 function session(): Session

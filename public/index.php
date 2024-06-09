@@ -11,7 +11,7 @@ csrfCreateAndCheck();
 
 Router::setDefaultNamespace("app\\controllers\\");
 
-Router::get("/{:?num}", "HomeController@index")->name("home")->middlewares(Auth::class);
+Router::get("/{:?num}", "HomeController@index")->name("home");
 
 Router::group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function () {
     Router::get("/", function () {

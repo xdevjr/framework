@@ -72,7 +72,7 @@ abstract class DBLayer
     }
 
     /**
-     * @param $paginator Reference to paginator instance
+     * @param \core\library\Paginator $paginator Reference to paginator instance
      */
     public function paginate(&$paginator, int $itemsPerPage, int $currentPage, string $link = "?page=", int $maxLinksPerPage = 5): static
     {
@@ -86,6 +86,9 @@ abstract class DBLayer
 
     public function insert(): bool
     {
+        if (!$this->entity)
+            throw new \Exception("Please set the entity before insert()!");
+
         $properties = $this->entity->getProperties();
         $result = $this->queryBuilder->insert($properties)->execute();
         return $result;
@@ -93,6 +96,9 @@ abstract class DBLayer
 
     public function update(array|int|string $value, string $field = "id", string $operator = "="): bool
     {
+        if (!$this->entity)
+            throw new \Exception("Please set the entity before update()!");
+
         $properties = $this->entity->getProperties();
         $result = $this->queryBuilder->update($properties)->where($field, $operator, $value)->execute();
         return $result;

@@ -119,7 +119,7 @@ class Select
     }
 
     /**
-     * @param $paginator Reference to paginator instance
+     * @param Paginator $paginator Reference to paginator instance
      */
     public function paginate(&$paginator, int $limit, int $currentPage = 1, string $link = "?page=", int $maxLinksPerPage = 5): static
     {

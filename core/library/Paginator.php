@@ -28,22 +28,79 @@ class Paginator
         return (int) ceil($this->totalItems / $this->itemsPerPage);
     }
 
-    public function generateLinks(bool $array = true): array|string
+    /**
+     * @param bool $firstlast if true the first and last links will be shown
+     * @param bool $nextprev if true the previous and next links will be shown
+     * @return array
+     */
+    public function links(bool $firstlast = true, bool $nextprev = true): array
     {
-        $links[] = "<a class='page-item' href='{$this->link}1'>Primeira</a>";
+        if ($firstlast) {
+            $linksArray["first"] = [
+                "link" => "{$this->link}1",
+                "text" => "First"
+            ];
+        }
+
+        if ($nextprev) {
+            $prev = max($this->currentPage - 1, 1);
+            $linksArray["previous"] = [
+                "link" => "{$this->link}{$prev}",
+                "text" => "<<"
+            ];
+        }
 
         $startLink = max(1, $this->currentPage - floor($this->maxLinksPerPage / 2));
         $endLink = min($startLink + $this->maxLinksPerPage - 1, $this->getTotalPages());
         for ($i = $startLink; $i <= $endLink; $i++) {
-            if($i == $this->currentPage){
-                $links[] = "<span class='page-item active'>{$i}</span>";
+            if ($i == $this->currentPage) {
+                $linksArray["current"] = [
+                    "link" => "{$this->link}{$i}",
+                    "text" => $i
+                ];
             } else {
-                $links[] = "<a class='page-item' href='{$this->link}{$i}'>{$i}</a>";
+                $linksArray[$i] = [
+                    "link" => "{$this->link}{$i}",
+                    "text" => $i
+                ];
             }
         }
 
-        $links[] = "<a class='page-item' href='{$this->link}{$this->getTotalPages()}'>Ultima</a>";
+        if ($nextprev) {
+            $next = min($this->currentPage + 1, $this->getTotalPages());
+            $linksArray["next"] = [
+                "link" => "{$this->link}{$next}",
+                "text" => ">>"
+            ];
+        }
+        if ($firstlast) {
+            $linksArray["last"] = [
+                "link" => "{$this->link}{$this->getTotalPages()}",
+                "text" => "Last"
+            ];
+        }
 
-        return $array ? $links : "<nav class='pagination'>" . implode($links) . "</nav>";
+        return $linksArray;
+    }
+
+    /**
+     * @param bool $firstlast if true the first and last links will be shown
+     * @param bool $nextprev if true the previous and next links will be shown
+     * @return string
+     */
+    public function bootstrap(bool $firstlast = true, bool $nextprev = true): string
+    {
+        $links = "<nav aria-label='Pagination'><ul class='pagination'>";
+        foreach ($this->links($firstlast, $nextprev) as $key => $item) {
+            extract($item);
+            if ($key == 'current')
+                $links .= "<li class='page-item'><span class='page-link active'>{$text}</span></li>";
+            else
+                $links .= "<li class='page-item'><a class='page-link' href='{$link}'>{$text}</a></li>";
+        }
+
+        $links .= "</ul></nav>";
+
+        return $links;
     }
 }
