@@ -27,48 +27,29 @@ abstract class Connection
 
     /**
      * 
-     * @param array $connections ["driver" => "", "host" => "", "dbname" => "", "username" => "", "password" => "", "options" => [], "port" => "", "file" => ""]
+     * @param string $dbname can be database name or file path case driver is sqlite
      * @param string $connectionName change to create multiple connections
      */
-    public static function set(array $connection, string $connectionName = "default"): void
-    {
-        self::$connParameters[$connectionName] = self::transformConnectionParameters($connection);
-    }
-
-    private static function transformConnectionParameters(array $parameters): array
-    {
-        extract(self::filterConnectionParameters($parameters));
+    public static function add(
+        string $username,
+        string $password,
+        string $driver,
+        string $dbname,
+        string $host = "",
+        array $options = [],
+        int $port = null,
+        string $connectionName = "default"
+    ): void {
         $port = !empty($port) ? "port={$port}" : "";
-        $host = $driver !== 'sqlite' ? "host={$host};" : $file;
-        $dbname = !empty($dbname) ? "dbname={$dbname};" : "";
+        $host = !empty($host) ? "host={$host};" : "";
+        $dbname = $dbname !== "sqlite" ? "dbname={$dbname};" : $dbname;
 
-        return [
+        self::$connParameters[$connectionName] = [
             "dsn" => "{$driver}:{$host}{$dbname}{$port}",
             "username" => $username,
             "password" => $password,
             "options" => $options
         ];
-    }
-
-    private static function filterConnectionParameters(array $parameters): array
-    {
-        $validParameters = [
-            "driver" => "",
-            "host" => "",
-            "dbname" => "",
-            "username" => "",
-            "password" => "",
-            "options" => [],
-            "port" => "",
-            "file" => ""
-        ];
-
-        array_walk($parameters, function ($value, $key) use ($validParameters) {
-            if (!in_array($key, array_keys($validParameters), true) and !in_array(gettype($value), array_map("gettype", $validParameters), true))
-                throw new \Exception("Invalid connection parameters");
-        });
-
-        return array_merge($validParameters, $parameters);
     }
 
 }
