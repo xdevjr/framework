@@ -7,6 +7,7 @@ readonly class Request
     public function __construct(
         private array $get,
         private array $post,
+        private array $json,
         private array $files,
         private array $cookies,
         private array $server
@@ -15,7 +16,8 @@ readonly class Request
 
     public static function create(): static
     {
-        return new static($_GET, $_POST, $_FILES, $_COOKIE, $_SERVER);
+        $json = json_decode(file_get_contents('php://input'), true) ?? [];
+        return new static($_GET, $_POST, $json, $_FILES, $_COOKIE, $_SERVER);
     }
 
     private function filter(string $request, bool $array = false): object|array
@@ -23,8 +25,8 @@ readonly class Request
         if (!property_exists($this, $request))
             throw new \Exception("Property {$request} not exist!");
 
-        $filter = filter_var_array(array_map(function($value) {
-            if (is_array($value)){
+        $filter = filter_var_array(array_map(function ($value) {
+            if (is_array($value)) {
                 return array_map(function ($value) {
                     return trim(strip_tags($value));
                 }, $value);
@@ -70,5 +72,13 @@ readonly class Request
             return $this->filter("server", $array);
 
         return $array ? $this->server : (object) $this->server;
+    }
+
+    public function json(bool $filter = true, bool $array = false): object|array
+    {
+        if ($filter)
+            return $this->filter("json", $array);
+
+        return $array ? $this->json : (object) $this->json;
     }
 }

@@ -81,7 +81,8 @@ class Session
 
     public function checkCsrfToken(): void
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' and (!isset($_POST['__csrf']) or !hash_equals($_SESSION['__csrf'], $_POST['__csrf'])))
+        $token = $_REQUEST['__csrf'] ?? json_decode(file_get_contents('php://input'), true)['__csrf'] ?? null;
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET' and (!isset($token) or !hash_equals($_SESSION['__csrf'], $token)))
             throw new \Exception("Error processing request, csrf token is not valid!");
     }
 
