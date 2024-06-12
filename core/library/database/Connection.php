@@ -4,8 +4,7 @@ namespace core\library\database;
 
 abstract class Connection
 {
-    private static ?\PDO $connection = null;
-    private static ?string $activeConnection = null;
+    private static array $activeConnections = [];
     private static array $connParameters = [
         "default" => [
             "dsn" => "",
@@ -14,15 +13,17 @@ abstract class Connection
             "options" => []
         ]
     ];
-    public static function get(string $connection = "default"): \PDO
+    public static function get(string $connectionName = "default"): \PDO
     {
-        if (!self::$connection or self::$activeConnection !== $connection) {
-            self::$activeConnection = $connection;
-            extract(self::$connParameters[$connection]);
-            self::$connection = new \PDO($dsn, $username, $password, $options);
+        if (!array_key_exists($connectionName, self::$activeConnections)) {
+            if (!array_key_exists($connectionName, self::$connParameters))
+                throw new \Exception("Connection {$connectionName} not found in database config!");
+
+            extract(self::$connParameters[$connectionName]);
+            self::$activeConnections[$connectionName] = new \PDO($dsn, $username, $password, $options);
         }
 
-        return self::$connection;
+        return self::$activeConnections[$connectionName];
     }
 
     /**
@@ -37,9 +38,12 @@ abstract class Connection
         string $dbname,
         string $host = "",
         array $options = [],
-        int $port = null,
+        ?int $port = null,
         string $connectionName = "default"
     ): void {
+        if (array_is_list($options))
+            throw new \Exception("The options must be an associative array!");
+
         $port = !empty($port) ? "port={$port}" : "";
         $host = !empty($host) ? "host={$host};" : "";
         $dbname = $dbname !== "sqlite" ? "dbname={$dbname};" : $dbname;
