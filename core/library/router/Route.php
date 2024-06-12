@@ -3,13 +3,14 @@
 namespace core\library\router;
 
 use core\interfaces\IMiddleware;
+use core\library\router\enums\Method;
 
 class Route
 {
     private string $path;
 
     public function __construct(
-        private string $method,
+        private Method $method,
         private string $uri,
         private \Closure|string $callback,
         private RouteOptions $routeOptions
@@ -31,7 +32,7 @@ class Route
 
     public function getMethod(): string
     {
-        return $this->method;
+        return $this->method->name;
     }
 
     private function parseRoute(): void

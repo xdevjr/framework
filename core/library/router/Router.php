@@ -1,6 +1,7 @@
 <?php
 
 namespace core\library\router;
+use core\library\router\enums\Method;
 
 abstract class Router
 {
@@ -21,25 +22,26 @@ abstract class Router
 
     private static function getCurrentRequestMethod(): string
     {
-        return strtolower($_POST["_method"] ?? $_SERVER['REQUEST_METHOD']);
+        return $_REQUEST["_method"] ?? $_SERVER['REQUEST_METHOD'];
     }
 
-    public static function getUrl(string $name, array $parameters = [], array $getParameters = []): string
+    public static function getUri(string $name, array $parameters = [], array $getParameters = []): string
     {
-        $routeFound = null;
-        foreach (self::$routes as $route) {
-            if ($route->getName() === $name)
-                $routeFound = $route;
-        }
+        $routeFound = array_values(array_filter(self::$routes, fn($route) => $route->getName() === $name))[0] ?? null;
 
-        $getParametersString = !empty($getParameters) ? "?" . http_build_query($getParameters) : "";
-        $parametersString = !empty($parameters) ? "/" . implode("/", $parameters) : "";
+        if (!array_is_list($parameters) and !empty($parameters))
+            throw new \Exception("The parameters cannot be an associative array!");
+
+        if (array_is_list($getParameters) and !empty($getParameters))
+            throw new \Exception("The getParameters must be an associative array!");
+
+        $getParametersString = $getParameters ? "?" . http_build_query($getParameters) : "";
 
         if ($routeFound) {
             $explodePath = explode('/', $routeFound->getPath());
             $explodeUri = explode('/', $routeFound->getUri());
-
             $diff = array_diff($explodeUri, $explodePath);
+            
             if (count($diff) == count($parameters)) {
                 for ($i = 0; $i < count($parameters); $i++) {
                     if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i] ?? ""))
@@ -55,7 +57,7 @@ abstract class Router
             return $url . $getParametersString;
         }
 
-        return $name . $parametersString . $getParametersString;
+        return $name . $getParametersString;
     }
 
     public static function group(array $groupOptions, \Closure $callback)
@@ -65,20 +67,13 @@ abstract class Router
         self::$routeOptions = [];
     }
 
-    public static function match(string|array $methods, string $uri, \Closure|string $callback, array $routeOptions = []): ?Route
+    public static function map(Method $methods, string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
         $routeOptions["defaultNamespace"] = self::$defaultNamespace;
         $routeOptions = array_merge(self::$routeOptions, $routeOptions);
         $routeOptions = new RouteOptions(...$routeOptions);
 
-        if (is_string($methods)) {
-            return self::$routes[] = new Route(strtolower($methods), $uri, $callback, $routeOptions);
-        } else if (is_array($methods)) {
-            foreach ($methods as $method) {
-                self::$routes[] = new Route(strtolower($method), $uri, $callback, $routeOptions);
-            }
-        }
-        return null;
+        return self::$routes[] = new Route($methods, $uri, $callback, $routeOptions);
     }
 
     private static function find(): Route
@@ -144,26 +139,26 @@ abstract class Router
 
     public static function get(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return self::match('get', $uri, $callback, $routeOptions);
+        return self::map(Method::GET, $uri, $callback, $routeOptions);
     }
 
     public static function post(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return self::match('post', $uri, $callback, $routeOptions);
+        return self::map(Method::POST, $uri, $callback, $routeOptions);
     }
 
     public static function put(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return self::match('put', $uri, $callback, $routeOptions);
+        return self::map(Method::PUT, $uri, $callback, $routeOptions);
     }
 
     public static function patch(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return self::match('patch', $uri, $callback, $routeOptions);
+        return self::map(Method::PATCH, $uri, $callback, $routeOptions);
     }
 
     public static function delete(string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
-        return self::match('delete', $uri, $callback, $routeOptions);
+        return self::map(Method::DELETE, $uri, $callback, $routeOptions);
     }
 }

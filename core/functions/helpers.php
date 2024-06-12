@@ -72,7 +72,7 @@ function slug(string $string): string
 
 function url(string $nameOrPath, array $parameters = [], array $getParameters = []): string
 {
-    return Router::getUrl($nameOrPath, $parameters, $getParameters);
+    return Router::getUri($nameOrPath, $parameters, $getParameters);
 }
 
 function flash(string $key, mixed $value, string $redirectTo = null): void
