@@ -1,6 +1,7 @@
 <?php
 
 namespace core\library\router;
+
 use core\library\router\enums\Method;
 
 abstract class Router
@@ -17,12 +18,14 @@ abstract class Router
 
     private static function getCurrentUri(): string
     {
-        return $_SERVER['REQUEST_URI'] !== "/" ? rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), "/") : "/";
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $uri = $uri !== "/" ? rtrim($uri, "/") : "/";
+        return $uri;
     }
 
     private static function getCurrentRequestMethod(): string
     {
-        return $_REQUEST["_method"] ?? $_SERVER['REQUEST_METHOD'];
+        return strtoupper($_REQUEST["_method"] ?? $_SERVER['REQUEST_METHOD']);
     }
 
     public static function getUri(string $name, array $parameters = [], array $getParameters = []): string
@@ -41,7 +44,7 @@ abstract class Router
             $explodePath = explode('/', $routeFound->getPath());
             $explodeUri = explode('/', $routeFound->getUri());
             $diff = array_diff($explodeUri, $explodePath);
-            
+
             if (count($diff) == count($parameters)) {
                 for ($i = 0; $i < count($parameters); $i++) {
                     if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i] ?? ""))
@@ -60,8 +63,11 @@ abstract class Router
         return $name . $getParametersString;
     }
 
-    public static function group(array $groupOptions, \Closure $callback)
+    public static function group(array $groupOptions, \Closure $callback): void
     {
+        if (array_is_list($groupOptions))
+            throw new \Exception("The groupOptions must be an associative array!");
+
         self::$routeOptions = $groupOptions;
         call_user_func($callback);
         self::$routeOptions = [];
@@ -69,6 +75,9 @@ abstract class Router
 
     public static function map(Method $methods, string $uri, \Closure|string $callback, array $routeOptions = []): Route
     {
+        if (array_is_list($routeOptions) and !empty($routeOptions))
+            throw new \Exception("The routeOptions must be an associative array!");
+
         $routeOptions["defaultNamespace"] = self::$defaultNamespace;
         $routeOptions = array_merge(self::$routeOptions, $routeOptions);
         $routeOptions = new RouteOptions(...$routeOptions);
@@ -133,6 +142,9 @@ abstract class Router
 
     public static function addWildcards(array $wildcards): void
     {
+        if (array_is_list($wildcards))
+            throw new \Exception("The wildcards must be an associative array!");
+
         foreach ($wildcards as $key => $value)
             RouteWildcard::add($key, $value);
     }
