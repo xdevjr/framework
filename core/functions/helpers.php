@@ -51,21 +51,26 @@ function validate(): Validator
 }
 
 /**
- * Get the root path of the project.
+ * Returns the root path of the project with an optional relative path appended.
  *
- * @param string $path the optional relative path to be appended to the root path
- * @return string the root path with the given path appended
+ * @param string $path The optional relative path to be appended to the root path.
+ * @return string The root path with the given path appended.
  */
 function root(string $path = null): string
 {
-    $path = $path ? str_replace(["\\", "/"], DIRECTORY_SEPARATOR, trim($path, "\/")) . DIRECTORY_SEPARATOR : "";
-    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . $path;
+    $path = $path ? str_replace(["\\", "/"], DIRECTORY_SEPARATOR, trim($path, "\/")) : "";
+    $path = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . $path;
+
+    if (is_dir($path))
+        $path .= DIRECTORY_SEPARATOR;
+
+    return $path;
 }
 
-function slug(string $string): string
+function slugify(string $string, string $delimiter = "-"): string
 {
-    $slug = iconv("utf-8", "us-ascii//TRANSLIT", strtolower(trim($string)));
-    $slug = preg_replace(["/\s+/", "/[^\-\w]/"], ["-", ""], $slug);
+    $slug = transliterator_transliterate("Any-Latin; Latin-ASCII; Lower; NFC; NFD; [:Punctuation:] Remove;  [:Symbol:] Remove", trim($string));
+    $slug = preg_replace(["/\s+/", "/[^\-\w]/"], [$delimiter, ""], $slug);
 
     return $slug;
 }
@@ -94,7 +99,15 @@ function csrfCreateAndCheck(): void
     session()->createCsrfToken();
     session()->checkCsrfToken();
 }
+
 function csrf(): string
 {
-    return '<input type="hidden" name="__csrf" value="' . session()->getCsrfToken() . '">';
+    $dom = new DOMDocument();
+    $input = $dom->createElement("input");
+    $input->setAttribute("type", "hidden");
+    $input->setAttribute("name", "__csrf");
+    $input->setAttribute("value", session()->getCsrfToken());
+    $dom->appendChild($input);
+
+    return $dom->saveHTML();
 }

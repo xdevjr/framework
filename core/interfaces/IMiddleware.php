@@ -4,5 +4,5 @@ namespace core\interfaces;
 
 interface IMiddleware
 {
-    public function execute();
+    public function execute(): void;
 }
