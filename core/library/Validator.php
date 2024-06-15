@@ -7,20 +7,40 @@ class Validator
 
     private array $messages = [];
     private array $customMessages = [];
-    private array $rules = [];
     private array $params = [];
+    private bool $valid;
 
-    public function fromArray(array $data, array $rules)
+    public function __construct(
+        private array|string|int|float|bool|null $data,
+        private array|string $rules
+    ) {
+        if (is_array($this->data) and is_array($this->rules)) {
+            if (array_is_list($this->data) or array_is_list($this->rules))
+                throw new \Exception("The data and rules must be an associative array!");
+
+            $this->valid = $this->fromArray($this->data, $this->rules);
+
+            array_walk($this->rules, function ($value, $key) {
+                if (!array_key_exists($key, $this->data))
+                    if (in_array("required", $value))
+                        $this->valid = $this->required($key, null);
+            });
+        } else if (!is_array($this->data) and !is_array($this->rules))
+            $this->valid = $this->fromValue($this->data, $this->rules);
+        else
+            throw new \Exception("If data is an array, the rules must be an array and if data is not an array, the rules must be a string!");
+    }
+
+    public function isValid(): bool
+    {
+        return $this->valid;
+    }
+
+    private function fromArray(array $data, array $rules): bool
     {
         $this->rules = $this->setRules($rules);
         $allValidations = true;
         foreach ($data as $field => $value) {
-            if (isset($this->params[$field]["same"])) {
-                $this->params[$field]["same"][] = $data[$this->params[$field]["same"][0]];
-            } elseif (isset($this->params[$field]["different"])) {
-                $this->params[$field]["different"][] = $data[$this->params[$field]["different"][0]];
-            }
-
             if (!$this->validate($field, $value))
                 $allValidations = false;
         }
@@ -28,7 +48,7 @@ class Validator
         return $allValidations;
     }
 
-    public function fromValue(mixed $value, string $rules): bool
+    private function fromValue(string|int|float|bool|null $value, string $rules): bool
     {
         $this->rules = $this->setRules(["value" => $rules]);
         return $this->validate("value", $value);
@@ -71,7 +91,6 @@ class Validator
         $value = array_values($aliases);
 
         $this->messages[$field] = !empty($this->customMessages[$validation]) ? str_replace($alias, $value, $this->customMessages[$validation]) : $message;
-        ;
     }
 
     public function setCustomMessages(array $messages): void
@@ -126,7 +145,7 @@ class Validator
 
     private function int(string $field, mixed $value): bool
     {
-        if (is_int($value + 0))
+        if (is_numeric($value) and is_int($value + 0))
             return true;
 
         $this->addMessage(["{:field}" => $field], "The field {$field} must be of type integer!", __FUNCTION__);
@@ -135,7 +154,7 @@ class Validator
 
     private function float(string $field, mixed $value): bool
     {
-        if (is_float($value + 0))
+        if (is_numeric($value) and is_float($value + 0))
             return true;
 
         $this->addMessage(["{:field}" => $field], "The field {$field} must be of type float!", __FUNCTION__);
@@ -234,7 +253,8 @@ class Validator
 
     private function min(string $field, mixed $value, array $params): bool
     {
-        if (strlen($value) >= $params[0])
+        $value = is_numeric($value) ? $value + 0 : strlen($value);
+        if ($value >= $params[0])
             return true;
 
         $this->addMessage(["{:field}" => $field, "{:min}" => $params[0]], "The field {$field} must have at least {$params[0]} characters!", __FUNCTION__);
@@ -243,7 +263,8 @@ class Validator
 
     private function max(string $field, mixed $value, array $params): bool
     {
-        if (strlen($value) <= $params[0])
+        $value = is_numeric($value) ? $value + 0 : strlen($value);
+        if ($value <= $params[0])
             return true;
 
         $this->addMessage(["{:field}" => $field, "{:max}" => $params[0]], "The field {$field} must have a maximum of {$params[0]} characters!", __FUNCTION__);
@@ -252,6 +273,7 @@ class Validator
 
     private function between(string $field, mixed $value, array $params): bool
     {
+        $value = is_numeric($value) ? $value + 0 : strlen($value);
         if ($value >= $params[0] and $value <= $params[1])
             return true;
 
@@ -279,7 +301,7 @@ class Validator
 
     private function same(string $field, mixed $value, array $params): bool
     {
-        if ($value === $params[1])
+        if ($value === $this->data[$params[0]])
             return true;
 
         $this->addMessage(["{:field}" => $field, "{:same}" => $params[0]], "The field {$field} must be equal to the field {$params[0]}!", __FUNCTION__);
@@ -288,7 +310,7 @@ class Validator
 
     private function different(string $field, mixed $value, array $params): bool
     {
-        if ($value !== $params[1])
+        if ($value !== $this->data[$params[0]])
             return true;
 
         $this->addMessage(["{:field}" => $field, "{:different}" => $params[0]], "The field {$field} must be different from the field {$params[0]}!", __FUNCTION__);
@@ -297,7 +319,7 @@ class Validator
 
     private function string(string $field, mixed $value): bool
     {
-        if (is_string($value) and ctype_print($value))
+        if (is_string($value))
             return true;
 
         $this->addMessage(["{:field}" => $field], "The field {$field} must be of type string!", __FUNCTION__);
