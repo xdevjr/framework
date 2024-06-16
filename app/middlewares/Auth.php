@@ -6,7 +6,7 @@ use core\interfaces\IMiddleware;
 
 class Auth implements IMiddleware
 {
-    public function execute()
+    public function execute(): void
     {
         dump("auth middleware");
     }
