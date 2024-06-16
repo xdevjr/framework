@@ -8,19 +8,22 @@ class UserEntity extends Entity
 {
     public function __construct(array $properties = [])
     {
-        $validate = validate();
-        $valid = $validate->fromArray($properties, [
-            "firstName" => "required|alpha",
-            "lastName" => "required|alpha",
-            "email" => "required|email",
-            "password" => "required|alphanumspecial",
-        ]);
-        if (!$valid) {
-            throw new \Exception($validate->getFirstMessage());
-        }
         parent::__construct($properties);
-        $this->passwordHash();
+        $this->validate();
     }
+    private function validate(): void
+    {
+        $validate = validate($this->getProperties(), [
+            "firstName" => "alpha",
+            "lastName" => "alpha",
+            "email" => "email",
+            "password" => "alphanumspecial",
+        ]);
+
+        if (!$validate->isValid())
+            throw new \Exception($validate->getFirstMessage());
+    }
+
     public function passwordHash(): void
     {
         if (isset($this->password))

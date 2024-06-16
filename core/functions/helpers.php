@@ -45,9 +45,9 @@ function paginator(int $currentPage, int $itemsPerPage, int $totalItems, string 
     return new Paginator($currentPage, $itemsPerPage, $totalItems, $link, $maxLinksPerPage);
 }
 
-function validate(array|string|int|float|bool|null $data, array|string $rules): Validator
+function validate(array|string|int|float|bool|null $data, array|string $rules, array $customMessages = []): Validator
 {
-    return new Validator($data, $rules);
+    return new Validator($data, $rules, $customMessages);
 }
 
 /**

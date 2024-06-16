@@ -6,18 +6,15 @@ class Validator
 {
 
     private array $messages = [];
-    private array $customMessages = [];
     private array $params = [];
     private bool $valid;
 
     public function __construct(
         private array|string|int|float|bool|null $data,
-        private array|string $rules
+        private array|string $rules,
+        private array $customMessages = []
     ) {
-        if (is_array($this->data) and is_array($this->rules)) {
-            if (array_is_list($this->data) or array_is_list($this->rules))
-                throw new \Exception("The data and rules must be an associative array!");
-
+        if (is_array($this->rules)) {
             $this->valid = $this->fromArray($this->data, $this->rules);
 
             array_walk($this->rules, function ($value, $key) {
@@ -25,10 +22,8 @@ class Validator
                     if (in_array("required", $value))
                         $this->valid = $this->required($key, null);
             });
-        } else if (!is_array($this->data) and !is_array($this->rules))
+        } else
             $this->valid = $this->fromValue($this->data, $this->rules);
-        else
-            throw new \Exception("If data is an array, the rules must be an array and if data is not an array, the rules must be a string!");
     }
 
     public function isValid(): bool
@@ -81,7 +76,7 @@ class Validator
 
     public function getFirstMessage(): string
     {
-        return $this->messages[array_key_first($this->messages)];
+        return $this->messages[array_key_first($this->messages)] ?? "No message found!";
     }
 
     private function addMessage(array $aliases, string $message, string $validation): void
@@ -91,11 +86,6 @@ class Validator
         $value = array_values($aliases);
 
         $this->messages[$field] = !empty($this->customMessages[$validation]) ? str_replace($alias, $value, $this->customMessages[$validation]) : $message;
-    }
-
-    public function setCustomMessages(array $messages): void
-    {
-        $this->customMessages = $messages;
     }
 
     private function setRules(array $rules): array
