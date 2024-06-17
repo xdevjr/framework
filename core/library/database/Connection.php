@@ -48,7 +48,7 @@ abstract class Connection
         ?int $port = null,
         string $connectionName = "default"
     ): void {
-        if (array_is_list($options))
+        if (!empty($options) and array_is_list($options))
             throw new \Exception("The options must be an associative array!");
 
         $port = !empty($port) ? "port={$port}" : "";
