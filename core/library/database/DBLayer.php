@@ -9,8 +9,8 @@ abstract class DBLayer
 {
 
     protected string $table;
-    protected string $db = "default";
-    public ?QB $queryBuilder = null;
+    protected string $connection = "default";
+    private ?QB $queryBuilder = null;
     protected ?Select $currentSelect = null;
     protected array|Entity|null $results = null;
     protected static string $entityNamespace = "app\\database\\entities\\";
@@ -18,12 +18,19 @@ abstract class DBLayer
     public function __construct(
         public ?Entity $entity = null
     ) {
-        $this->queryBuilder = QB::create($this->table, $this->db);
     }
 
     public static function setEntityNamespace(string $namespace): void
     {
         self::$entityNamespace = $namespace;
+    }
+
+    public function queryBuilder(): QB
+    {
+        if (!$this->queryBuilder)
+            $this->queryBuilder = Connection::createQueryBuilder($this->table, $this->connection);
+
+        return $this->queryBuilder;
     }
 
     private function getEntity(): string
@@ -44,7 +51,7 @@ abstract class DBLayer
      */
     public function all(string ...$fields): static
     {
-        $this->currentSelect = $this->queryBuilder->select(...$fields);
+        $this->currentSelect = $this->queryBuilder()->select(...$fields);
         $this->results = $this->currentSelect->fetchAll($this->getEntity());
         return $this;
     }
@@ -54,7 +61,7 @@ abstract class DBLayer
      */
     public function find(array|int|string $value, string $by = "id", string $operator = "=", string ...$fields): static
     {
-        $this->currentSelect = $this->queryBuilder->select(...$fields)->where($by, $operator, $value);
+        $this->currentSelect = $this->queryBuilder()->select(...$fields)->where($by, $operator, $value);
         if ($this->currentSelect->totalItems() > 1) {
             $result = $this->currentSelect->fetchAll($this->getEntity());
         } else {
@@ -85,7 +92,7 @@ abstract class DBLayer
             throw new \Exception("Please set the entity before insert()!");
 
         $properties = $this->entity->getProperties();
-        $result = $this->queryBuilder->insert($properties)->execute();
+        $result = $this->queryBuilder()->insert($properties)->execute();
         return $result;
     }
 
@@ -95,13 +102,13 @@ abstract class DBLayer
             throw new \Exception("Please set the entity before update()!");
 
         $properties = $this->entity->getProperties();
-        $result = $this->queryBuilder->update($properties)->where($field, $operator, $value)->execute();
+        $result = $this->queryBuilder()->update($properties)->where($field, $operator, $value)->execute();
         return $result;
     }
 
     public function delete(array|int|string $value, string $field = "id", string $operator = "="): bool
     {
-        $result = $this->queryBuilder->delete()->where($field, $operator, $value)->execute();
+        $result = $this->queryBuilder()->delete()->where($field, $operator, $value)->execute();
         return $result;
     }
 

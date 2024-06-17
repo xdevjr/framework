@@ -8,12 +8,11 @@ class QB
 {
     public function __construct(
         private string $table,
-        private string|\PDO $connection = "default"
+        private \PDO $connection
     ) {
-        $this->connection = $this->connection instanceof \PDO ? $this->connection : Connection::get($this->connection);
     }
 
-    public static function create(string $table, string|\PDO $connection = "default"): static
+    public static function create(string $table, \PDO $connection): static
     {
         return new static($table, $connection);
     }

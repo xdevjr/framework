@@ -2,6 +2,8 @@
 
 namespace core\library\database;
 
+use core\library\database\query\QB;
+
 abstract class Connection
 {
     private static array $activeConnections = [];
@@ -24,6 +26,11 @@ abstract class Connection
         }
 
         return self::$activeConnections[$connectionName];
+    }
+
+    public static function createQueryBuilder(string $table, string $connectionName = "default"): QB
+    {
+        return QB::create($table, self::get($connectionName));
     }
 
     /**

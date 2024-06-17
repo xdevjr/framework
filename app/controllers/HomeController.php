@@ -20,7 +20,7 @@ class HomeController
             "email" => $faker->email,
             "password" => $faker->password,
         ]);
-
+        
         $users = $user->model()->all()->paginate($links, 3, $page, url("home", [null]))->relationWith(Post::class, "user_id", alias: "posts")->result();
 
 
