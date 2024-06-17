@@ -32,11 +32,18 @@ abstract class Entity
         return $properties;
     }
 
-    public function model(): DBLayer
+    /**
+     * Return model for this entity class based on class name, replaces $entitySuffix with $modelSuffix
+     * 
+     * @param string $entitySuffix suffix of entity class name to remove e.g. if set "Entity" and entity name is "UserEntity" will return "User"
+     * @param string $modelSuffix suffix of model class name to append e.g. if set "Model" and entity name is "UserEntity" will return "UserModel"
+     * @return \core\library\database\DBLayer
+     */
+    public function model(string $entitySuffix = "Entity", string $modelSuffix = ""): DBLayer
     {
         if (!$this->model) {
-            $model = self::$modelNamespace . str_replace("Entity", "", (new \ReflectionClass($this))->getShortName());
-            $this->model = new $model($this);
+            $model = self::$modelNamespace . str_replace($entitySuffix, $modelSuffix, (new \ReflectionClass($this))->getShortName());
+            $this->model = (new $model())->setEntity($this);
         }
 
         return $this->model;

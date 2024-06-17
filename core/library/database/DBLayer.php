@@ -10,19 +10,21 @@ abstract class DBLayer
 
     protected string $table;
     protected string $connection = "default";
-    private ?QB $queryBuilder = null;
+    protected ?QB $queryBuilder = null;
     protected ?Select $currentSelect = null;
     protected array|Entity|null $results = null;
     protected static string $entityNamespace = "app\\database\\entities\\";
-
-    public function __construct(
-        public ?Entity $entity = null
-    ) {
-    }
+    public ?Entity $entity = null;
 
     public static function setEntityNamespace(string $namespace): void
     {
         self::$entityNamespace = $namespace;
+    }
+
+    public function setEntity(Entity $entity): static
+    {
+        $this->entity = $entity;
+        return $this;
     }
 
     public function queryBuilder(): QB
