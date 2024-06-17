@@ -7,21 +7,15 @@ use core\library\database\query\QB;
 abstract class Connection
 {
     private static array $activeConnections = [];
-    private static array $connParameters = [
-        "default" => [
-            "dsn" => "",
-            "username" => "",
-            "password" => "",
-            "options" => []
-        ]
-    ];
+    private static array $connParameters = [];
     public static function get(string $connectionName = "default"): \PDO
     {
         if (!array_key_exists($connectionName, self::$activeConnections)) {
-            if (!array_key_exists($connectionName, self::$connParameters))
+            $findConnectionParameters = array_values(array_filter(self::$connParameters, fn($connection) => $connection === $connectionName, ARRAY_FILTER_USE_KEY));
+            if (!$findConnectionParameters)
                 throw new \Exception("Connection {$connectionName} not found in database config!");
 
-            extract(self::$connParameters[$connectionName]);
+            extract(($findConnectionParameters[0])->parse());
             self::$activeConnections[$connectionName] = new \PDO($dsn, $username, $password, $options);
         }
 
@@ -33,34 +27,14 @@ abstract class Connection
         return QB::create($table, self::get($connectionName));
     }
 
-    /**
-     * 
-     * @param string $dbname can be database name or file path case driver is sqlite
-     * @param string $connectionName change to create multiple connections
-     */
-    public static function add(
-        string $username,
-        string $password,
-        string $driver,
-        string $dbname,
-        string $host = "",
-        array $options = [],
-        ?int $port = null,
-        string $connectionName = "default"
-    ): void {
-        if (!empty($options) and array_is_list($options))
-            throw new \Exception("The options must be an associative array!");
+    public static function add(ConnectionParameters ...$connectionParameters): void
+    {
+        foreach ($connectionParameters as $connectionParameter) {
+            if (isset(self::$connParameters[$connectionParameter->getName()]))
+                throw new \Exception("Connection {$connectionParameter->getName()} already exists in database config!");
 
-        $port = !empty($port) ? "port={$port}" : "";
-        $host = !empty($host) ? "host={$host};" : "";
-        $dbname = $dbname !== "sqlite" ? "dbname={$dbname};" : $dbname;
-
-        self::$connParameters[$connectionName] = [
-            "dsn" => "{$driver}:{$host}{$dbname}{$port}",
-            "username" => $username,
-            "password" => $password,
-            "options" => $options
-        ];
+            self::$connParameters[$connectionParameter->getName()] = $connectionParameter;
+        }
     }
 
 }
