@@ -21,7 +21,7 @@ class HomeController
             "password" => $faker->password,
         ]);
         
-        $users = $user->model()->all()->paginate($links, 3, $page, url("home", [null]))->relationWith(Post::class, "user_id", alias: "posts")->result();
+        $users = $user->model()->all()->paginate($links, 3, $page, url("web.home", [null]))->relationWith(Post::class, "user_id", alias: "posts")->result();
 
 
         // $queryBuilder = QB::create("users", Connection::get());

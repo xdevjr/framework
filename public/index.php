@@ -1,29 +1,11 @@
 <?php
 session_start();
 
-use app\middlewares\Auth;
-use app\middlewares\Teste;
+require realpath("../vendor/autoload.php");
+
 use core\library\router\Router;
 
-require ("../vendor/autoload.php");
-
-csrfCreateAndCheck();
-
-Router::setDefaultNamespace("app\\controllers\\");
-
-Router::get("/{:?num}", "HomeController@index")->name("home");
-
-Router::group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function () {
-    Router::get("/", function () {
-        echo "home admin";
-    }, ["name" => "home"]);
-    Router::get("/user", function () {
-        echo "user admin";
-    })->name("user")->middlewares();
-});
-
-Router::get("/teste", function () {
-    echo "teste";
-})->name("teste");
+require root("/app/routes/web.php");
+require root("/app/routes/api.php");
 
 Router::start();
