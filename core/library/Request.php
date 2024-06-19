@@ -9,7 +9,7 @@ readonly class Request
         private array $post,
         private array $json,
         private array $files,
-        private array $cookies,
+        private array $cookie,
         private array $server
     ) {
     }
@@ -38,12 +38,15 @@ readonly class Request
 
     public function all(bool $filter = true, bool $object = false): object|array
     {
-        $request = array_merge($this->get, $this->post, $this->json, $this->files);
+        $request = [...$this->get, ...$this->post, ...$this->json, ...$this->files];
         return $filter ? $this->filter($request, $object) : ($object ? (object) $request : $request);
     }
 
     public function only(string $request, bool $filter = true, bool $object = false): object|array
     {
+        if (!property_exists($this, $request))
+            throw new \Exception("Request {$request} does not exist!");
+
         return $filter ? $this->filter($this->$request, $object) : ($object ? (object) $this->$request : $this->$request);
     }
 
