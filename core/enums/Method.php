@@ -1,6 +1,6 @@
 <?php
 
-namespace core\library\router\enums;
+namespace core\enums;
 
 enum Method
 {

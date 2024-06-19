@@ -12,8 +12,7 @@ abstract class RouteWildcard
 
     public static function add(string $name, string $pattern): void
     {
-        if (!in_array($name, self::$wildcards))
-            self::$wildcards[$name] = $pattern;
+        self::$wildcards[$name] ??= $pattern;
     }
 
     public static function get(): array

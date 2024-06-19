@@ -1,6 +1,6 @@
 <?php
 
-namespace core\library\database\enums;
+namespace core\enums;
 
 enum Drivers: string
 {

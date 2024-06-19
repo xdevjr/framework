@@ -2,7 +2,7 @@
 
 namespace core\library\router;
 
-use core\library\router\enums\Method;
+use core\enums\Method;
 
 abstract class Router
 {

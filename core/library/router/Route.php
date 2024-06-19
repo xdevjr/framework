@@ -3,7 +3,7 @@
 namespace core\library\router;
 
 use core\interfaces\IMiddleware;
-use core\library\router\enums\Method;
+use core\enums\Method;
 
 class Route
 {

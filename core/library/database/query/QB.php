@@ -2,8 +2,6 @@
 
 namespace core\library\database\query;
 
-use core\library\database\Connection;
-
 class QB
 {
     public function __construct(

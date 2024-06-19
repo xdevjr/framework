@@ -1,8 +1,7 @@
 <?php
 
 namespace core\library\database;
-
-use core\library\database\enums\Drivers;
+use core\enums\Drivers;
 
 readonly class ConnectionParameters
 {
