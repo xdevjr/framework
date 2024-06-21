@@ -8,7 +8,8 @@ abstract class Router
 {
     private static array $routes = [];
     private static ?array $params = null;
-    private static array $routeOptions = [];
+    /** @var RouteOptions[] $groupOptions */
+    private static array $groupOptions = [];
     private static string $defaultNamespace;
 
     public static function setDefaultNamespace(string $namespace): void
@@ -63,24 +64,18 @@ abstract class Router
         return $name . $getParametersString;
     }
 
-    public static function group(array $groupOptions, \Closure $callback): void
+    public static function group(array|RouteOptions $groupOptions, \Closure $callback): void
     {
-        if (array_is_list($groupOptions))
-            throw new \Exception("The groupOptions must be an associative array!");
-
-        self::$routeOptions = $groupOptions;
+        self::$groupOptions[] = is_array($groupOptions) ? RouteOptions::create(...$groupOptions)->clearNonGroupOptions() : $groupOptions->clearNonGroupOptions();
         call_user_func($callback);
-        self::$routeOptions = [];
+        array_pop(self::$groupOptions);
     }
 
-    public static function map(Method $methods, string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function map(Method $methods, string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
-        if (array_is_list($routeOptions) and !empty($routeOptions))
-            throw new \Exception("The routeOptions must be an associative array!");
-
-        $routeOptions["defaultNamespace"] = self::$defaultNamespace;
-        $routeOptions = array_merge(self::$routeOptions, $routeOptions);
-        $routeOptions = new RouteOptions(...$routeOptions);
+        $routeOptions = is_array($routeOptions) ? RouteOptions::create(...$routeOptions) : $routeOptions;
+        $routeOptions->setOption("defaultNamespace", self::$defaultNamespace);
+        $routeOptions->merge(...self::$groupOptions ?? new RouteOptions);
 
         return self::$routes[] = new Route($methods, $uri, $callback, $routeOptions);
     }
@@ -137,7 +132,13 @@ abstract class Router
 
     public static function debug(): void
     {
-        dump(["params" => self::$params, "routes" => self::$routes, "currentUri" => self::getCurrentUri(), "currentRequestMethod" => self::getCurrentRequestMethod()]);
+        dump([
+            "params" => self::$params,
+            "routes" => self::$routes,
+            "currentUri" => self::getCurrentUri(),
+            "currentRequestMethod" => self::getCurrentRequestMethod(),
+            "groupOptions" => self::$groupOptions
+        ]);
     }
 
     public static function addWildcards(array $wildcards): void
@@ -149,27 +150,27 @@ abstract class Router
             RouteWildcard::add($key, $value);
     }
 
-    public static function get(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function get(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::GET, $uri, $callback, $routeOptions);
     }
 
-    public static function post(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function post(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::POST, $uri, $callback, $routeOptions);
     }
 
-    public static function put(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function put(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::PUT, $uri, $callback, $routeOptions);
     }
 
-    public static function patch(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function patch(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::PATCH, $uri, $callback, $routeOptions);
     }
 
-    public static function delete(string $uri, \Closure|string $callback, array $routeOptions = []): Route
+    public static function delete(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::DELETE, $uri, $callback, $routeOptions);
     }

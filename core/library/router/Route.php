@@ -109,13 +109,13 @@ class Route
         return $this;
     }
 
-    public function middlewares(string ...$middlewares): static
+    public function overrideMiddlewares(string ...$middlewares): static
     {
         $this->routeOptions->setOption("middlewares", $middlewares);
         return $this;
     }
 
-    public function appendMiddlewares(string ...$middlewares): static
+    public function middlewares(string ...$middlewares): static
     {
         $middlewares = array_merge($this->routeOptions->getOption("middlewares"), $middlewares);
         $this->routeOptions->setOption("middlewares", $middlewares);
