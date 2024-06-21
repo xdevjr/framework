@@ -95,8 +95,12 @@ class Select
     public function join(string $table, array $fields, string $type = "inner"): static
     {
         $fields = $this->query["fields"] . ", " . implode(", ", $fields);
-        $this->query["select"] = "";
-        $this->query["join"] = "select {$fields} from {$this->table} {$type} join {$table}";
+        if (!$this->query["join"]) {
+            $this->query["select"] = "";
+            $this->query["join"] = "select {$fields} from {$this->table} {$type} join {$table}";
+        } else {
+            $this->query["join"] .= " {$type} join {$table}";
+        }
         return $this;
     }
 
