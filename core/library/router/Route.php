@@ -54,7 +54,7 @@ class Route
         return '/^' . $uri . '$/';
     }
 
-    public function getAction(): array|\Closure
+    public function getAction(bool $withDI = false): array|\Closure
     {
         if (is_string($this->callback)) {
             [$controller, $method] = explode('@', $this->callback);
@@ -63,10 +63,7 @@ class Route
             if (!class_exists($controller) || !method_exists($controller, $method))
                 throw new \Exception("Controller {$controller} or method {$method} were not found!", 501);
 
-            return [
-                new $controller,
-                $method
-            ];
+            return $withDI ? [$controller, $method] : [new $controller, $method];
         }
 
         return $this->callback;

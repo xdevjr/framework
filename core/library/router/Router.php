@@ -3,6 +3,7 @@
 namespace core\library\router;
 
 use core\enums\Method;
+use core\library\container\Container;
 
 abstract class Router
 {
@@ -11,10 +12,16 @@ abstract class Router
     /** @var RouteOptions[] $groupOptions */
     private static array $groupOptions = [];
     private static string $defaultNamespace;
+    private static Container $container;
 
     public static function setDefaultNamespace(string $namespace): void
     {
         self::$defaultNamespace = $namespace;
+    }
+
+    public static function setContainer(Container $container): void
+    {
+        self::$container = $container;
     }
 
     private static function getCurrentUri(): string
@@ -109,6 +116,19 @@ abstract class Router
         call_user_func($route->getAction(), ...$parameters);
     }
 
+    private static function executeWithDI(Route $route): void
+    {
+        $route->executeMiddlewares();
+        $parameters = array_merge($route->getParameters(), self::$params);
+        $action = $route->getAction(true);
+        if (is_callable($action)) {
+            call_user_func($action, ...$parameters);
+        } else {
+            [$controller, $method] = $action;
+            self::$container->call($controller, $method, $parameters);
+        }
+    }
+
     /**
      * Starts the execution of the application by finding the appropriate route and executing it.
      *
@@ -116,10 +136,14 @@ abstract class Router
      * @throws \Exception If a route is not found or if the request method is not supported.
      * @return void
      */
-    public static function start(\Closure $errors = null): void
+    public static function start(?\Closure $errors = null): void
     {
         try {
-            self::execute(self::find());
+            $route = self::find();
+            if (isset(self::$container))
+                self::executeWithDI($route);
+            else
+                self::execute($route);
         } catch (\Exception $e) {
             if ($errors)
                 call_user_func($errors, $e);

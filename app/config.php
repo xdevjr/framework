@@ -1,9 +1,12 @@
 <?php
 use core\enums\Drivers;
+use core\library\Request;
 use core\library\router\Router;
 use core\library\database\Entity;
 use core\library\database\DBLayer;
+use core\library\container\Container;
 use core\library\database\Connection;
+use core\library\container\Application;
 use core\library\database\ConnectionParameters;
 
 Connection::add(
@@ -26,3 +29,12 @@ DBLayer::setEntityNamespace("app\\database\\entities\\");
 Entity::setModelNamespace("app\\database\\models\\");
 
 Router::setDefaultNamespace("app\\controllers\\");
+
+$container = new Container;
+$container->addDefinitions([
+    Request::class => function () {
+        return Request::create();
+    }
+]);
+Router::setContainer($container);
+Application::resolve($container);

@@ -28,17 +28,19 @@ function redirect(string $url): void
     exit;
 }
 
-function view(string $view, array $data = []): string
+function view(string $view, array $data = []): Response
 {
     $loader = new FilesystemLoader(dirname(__DIR__, 2) . '/app/views');
     $twig = new Environment($loader);
 
-    return $twig->render("$view.twig.php", $data);
+    return response(
+        $twig->render("$view.twig.php", $data)
+    );
 }
 
 function session(): Session
 {
-    return new Session();
+    return new Session;
 }
 function paginator(int $currentPage, int $itemsPerPage, int $totalItems, string $link, int $maxLinksPerPage = 5): Paginator
 {
