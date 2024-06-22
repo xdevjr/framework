@@ -1,6 +1,7 @@
 <?php
 
 namespace core\library\database;
+
 use core\enums\Drivers;
 
 readonly class ConnectionParameters
@@ -22,6 +23,11 @@ readonly class ConnectionParameters
     ) {
     }
 
+    /**
+     * 
+     * @param string $database can be database name or file path case driver is sqlite
+     * @param string $connectionName change to create multiple connections
+     */
     public static function create(
         Drivers $driver,
         string $username,
