@@ -24,17 +24,12 @@ Connection::add(
     )
 );
 
-DBLayer::setEntityNamespace("app\\database\\entities\\");
-
-Entity::setModelNamespace("app\\database\\models\\");
-
-Router::setDefaultNamespace("app\\controllers\\");
+DBLayer::setEntityNamespace('app\database\entities\\');
+Entity::setModelNamespace('app\database\models\\');
+Router::setDefaultNamespace('app\controllers\\');
 
 $container = new Container;
-$container->addDefinitions([
-    Request::class => function () {
-        return Request::create();
-    }
-]);
+$container->addDefinitions(root("/app/definitions/definitions.php"));
+
 Router::setContainer($container);
 Application::resolve($container);

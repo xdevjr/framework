@@ -11,7 +11,6 @@ class RouteOptions
         private string $groupName = "",
         private array $middlewares = [],
         private string $namespace = "",
-        private string $defaultNamespace = "",
         private string $customRegex = ""
     ) {
         if (!array_is_list($this->parameters))
@@ -28,10 +27,9 @@ class RouteOptions
         string $groupName = "",
         array $middlewares = [],
         string $namespace = "",
-        string $defaultNamespace = "",
         string $customRegex = ""
     ): static {
-        return new static($parameters, $prefix, $name, $groupName, $middlewares, $namespace, $defaultNamespace, $customRegex);
+        return new static($parameters, $prefix, $name, $groupName, $middlewares, $namespace, $customRegex);
     }
 
     public function getOption(string $option): string|array
@@ -57,7 +55,6 @@ class RouteOptions
             $this->groupName .= empty($this->groupName) ? $routeOption->groupName : "." . $routeOption->groupName;
             $this->middlewares = array_merge($this->middlewares, $routeOption->middlewares);
             $this->namespace = $routeOption->namespace;
-            $this->defaultNamespace = $routeOption->defaultNamespace ?: $this->defaultNamespace;
             $this->customRegex = $routeOption->customRegex;
         }
 
@@ -68,7 +65,6 @@ class RouteOptions
     {
         $this->parameters = [];
         $this->name = "";
-        $this->defaultNamespace = "";
         $this->customRegex = "";
 
         return $this;

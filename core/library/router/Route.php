@@ -12,7 +12,7 @@ class Route
     public function __construct(
         private Method $method,
         private string $uri,
-        private \Closure|string $callback,
+        private \Closure|array $callback,
         private RouteOptions $routeOptions
     ) {
         $this->uri = $this->routeOptions->getOption("prefix") . "/" . ltrim($this->uri, "/");
@@ -56,14 +56,16 @@ class Route
 
     public function getAction(bool $withDI = false): array|\Closure
     {
-        if (is_string($this->callback)) {
-            [$controller, $method] = explode('@', $this->callback);
+        if (!is_callable($this->callback)) {
+            [$controller, $method] = $this->callback;
             $controller = $this->getNamespace() . $controller;
 
             if (!class_exists($controller) || !method_exists($controller, $method))
                 throw new \Exception("Controller {$controller} or method {$method} were not found!", 501);
 
-            return $withDI ? [$controller, $method] : [new $controller, $method];
+            $controller = $withDI ? $controller : new $controller;
+
+            return [$controller, $method];
         }
 
         return $this->callback;
@@ -85,14 +87,14 @@ class Route
         }
     }
 
+    public function getNamespace(): string
+    {
+        return $this->routeOptions->getOption("namespace");
+    }
+
     public function getName(): string
     {
         return empty($this->routeOptions->getOption("groupName")) ? $this->routeOptions->getOption("name") : $this->routeOptions->getOption("groupName") . "." . $this->routeOptions->getOption("name");
-    }
-
-    private function getNamespace(): string
-    {
-        return $this->routeOptions->getOption("namespace") ?: $this->routeOptions->getOption("defaultNamespace");
     }
 
     public function getParameters(): array

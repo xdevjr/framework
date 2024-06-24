@@ -78,13 +78,28 @@ abstract class Router
         array_pop(self::$groupOptions);
     }
 
-    public static function map(Method $methods, string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
+    /**
+     * @param \core\enums\Method $method
+     * @param string $uri
+     * @param \Closure|string|array $callback string example: "controller@method", array example: ["controller", "method"], closure example: function() {...}
+     * @param array|\core\library\router\RouteOptions $routeOptions
+     * @return \core\library\router\Route
+     */
+    public static function map(Method $method, string $uri, \Closure|string|array $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
+        $defaultNamespace = self::$defaultNamespace ?: "";
         $routeOptions = is_array($routeOptions) ? RouteOptions::create(...$routeOptions) : $routeOptions;
-        $routeOptions->setOption("defaultNamespace", self::$defaultNamespace);
         $routeOptions->merge(...self::$groupOptions ?? new RouteOptions);
 
-        return self::$routes[] = new Route($methods, $uri, $callback, $routeOptions);
+        if (!is_callable($callback)) {
+            if (is_string($callback)) {
+                $callback = explode('@', $callback);
+            }
+
+            $callback[0] = $defaultNamespace . $callback[0];
+        }
+
+        return self::$routes[] = new Route($method, $uri, $callback, $routeOptions);
     }
 
     private static function find(): Route
@@ -174,27 +189,57 @@ abstract class Router
             RouteWildcard::add($key, $value);
     }
 
-    public static function get(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
+    /**
+     * @param string $uri
+     * @param \Closure|string|array $callback string example: "controller@method", array example: ["controller", "method"], closure example: function() {...}
+     * @param array|\core\library\router\RouteOptions $routeOptions
+     * @return \core\library\router\Route
+     */
+    public static function get(string $uri, \Closure|string|array $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::GET, $uri, $callback, $routeOptions);
     }
 
-    public static function post(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
+    /**
+     * @param string $uri
+     * @param \Closure|string|array $callback string example: "controller@method", array example: ["controller", "method"], closure example: function() {...}
+     * @param array|\core\library\router\RouteOptions $routeOptions
+     * @return \core\library\router\Route
+     */
+    public static function post(string $uri, \Closure|string|array $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::POST, $uri, $callback, $routeOptions);
     }
 
-    public static function put(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
+    /**
+     * @param string $uri
+     * @param \Closure|string|array $callback string example: "controller@method", array example: ["controller", "method"], closure example: function() {...}
+     * @param array|\core\library\router\RouteOptions $routeOptions
+     * @return \core\library\router\Route
+     */
+    public static function put(string $uri, \Closure|string|array $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::PUT, $uri, $callback, $routeOptions);
     }
 
-    public static function patch(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
+    /**
+     * @param string $uri
+     * @param \Closure|string|array $callback string example: "controller@method", array example: ["controller", "method"], closure example: function() {...}
+     * @param array|\core\library\router\RouteOptions $routeOptions
+     * @return \core\library\router\Route
+     */
+    public static function patch(string $uri, \Closure|string|array $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::PATCH, $uri, $callback, $routeOptions);
     }
 
-    public static function delete(string $uri, \Closure|string $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
+    /**
+     * @param string $uri
+     * @param \Closure|string|array $callback string example: "controller@method", array example: ["controller", "method"], closure example: function() {...}
+     * @param array|\core\library\router\RouteOptions $routeOptions
+     * @return \core\library\router\Route
+     */
+    public static function delete(string $uri, \Closure|string|array $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
         return self::map(Method::DELETE, $uri, $callback, $routeOptions);
     }
