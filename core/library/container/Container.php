@@ -26,8 +26,8 @@ class Container
         if (is_string($definitions) and file_exists($definitions))
             $definitions = require $definitions;
 
-        if (!is_array($definitions))
-            throw new \Exception("The definitions must be an array or a path to a file that returns an array!");
+        if (!is_array($definitions) or array_is_list($definitions))
+            throw new \Exception("The definitions must be an associative array or a path to a file that returns an associative array!");
 
         foreach ($definitions as $key => $value)
             $this->bind($key, $value);
