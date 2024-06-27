@@ -13,10 +13,10 @@ class RouteOptions
         private string $namespace = "",
         private string $customRegex = ""
     ) {
-        if (!array_is_list($this->parameters))
-            throw new \Exception("The parameters cannot be an associative array!");
+        if (!empty($this->parameters) and array_is_list($this->parameters))
+            throw new \Exception("The parameters needs to be an associative array!");
 
-        if (!array_is_list($this->middlewares))
+        if (!array_is_list($this->middlewares) and !empty($this->middlewares))
             throw new \Exception("The middlewares cannot be an associative array!");
     }
 
@@ -42,6 +42,12 @@ class RouteOptions
     {
         if (!property_exists($this, $option))
             throw new \Exception("The option {$option} does not exist!");
+
+        if (!empty($this->parameters) and array_is_list($this->parameters))
+            throw new \Exception("The parameters needs to be an associative array!");
+
+        if (!array_is_list($this->middlewares) and !empty($this->middlewares))
+            throw new \Exception("The middlewares cannot be an associative array!");
 
         $this->{$option} = $value;
     }

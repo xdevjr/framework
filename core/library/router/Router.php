@@ -118,7 +118,8 @@ abstract class Router
         $route = $routes[0];
         $explodeRoute = explode('/', ltrim($route->getPath(), '/'));
         $explodeCurrentUri = explode('/', ltrim(self::getCurrentUri(), '/'));
-        self::$params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
+        $params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
+        self::$params = $params ? array_combine($route->getParametersNames(), $params) : [];
 
         return $route;
     }

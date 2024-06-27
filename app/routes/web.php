@@ -6,7 +6,7 @@ use core\library\router\Router;
 
 Router::group(["groupName" => "web", "middlewares" => [CSRF::class]], function () {
 
-    Router::get("/{:?num}", "HomeController@index")->name("home");
+    Router::get("/{page:?num}", "HomeController@index")->name("home");
 
     Router::group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function () {
 

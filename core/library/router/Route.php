@@ -37,14 +37,23 @@ class Route
 
     private function parseRoute(): void
     {
-        $search = array_map(fn($key) => "{:$key}", array_keys(RouteWildcard::get()));
-        $searchOptional = array_map(fn($key) => "{:?$key}", array_keys(RouteWildcard::get()));
+        $search = array_map(fn($key) => "/\{[A-z\_]+\:$key\}/", array_keys(RouteWildcard::get()));
+        $searchOptional = array_map(fn($key) => "/\{[A-z\_]+\:\?$key\}/", array_keys(RouteWildcard::get()));
         $search = array_merge($search, $searchOptional);
         $replace = array_values(RouteWildcard::get());
         $replaceOptional = array_map(fn($key) => "?($key)?", $replace);
         $replace = array_merge($replace, $replaceOptional);
 
-        $this->uri = str_replace($search, $replace, $this->uri);
+        $this->uri = preg_replace($search, $replace, $this->uri);
+    }
+
+    public function getParametersNames(): ?array
+    {
+        preg_match_all("/\{.+?\}/", $this->path, $matches);
+        return array_map(function ($value) {
+            [$name] = explode(":", $value);
+            return trim($name, "{}");
+        }, $matches[0]) ?? null;
     }
 
     public function getRegex(): string
@@ -134,7 +143,7 @@ class Route
         return $this;
     }
 
-    public function parameters(mixed ...$parameters): static
+    public function parameters(array $parameters): static
     {
         $this->routeOptions->setOption("parameters", $parameters);
         return $this;

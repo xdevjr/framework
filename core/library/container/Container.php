@@ -92,8 +92,9 @@ class Container
      */
     private function parameters(\ReflectionMethod $method): array
     {
-        return array_filter(array_map(function ($param) {
-            return $this->get($param->getType()->getName());
-        }, $method->getParameters()));
+        return array_filter(array_reduce($method->getParameters(), function ($carry, $param) {
+            $carry[$param->getName()] = $this->get($param->getType()->getName());
+            return $carry;
+        }, []));
     }
 }

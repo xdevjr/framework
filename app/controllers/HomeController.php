@@ -5,6 +5,8 @@ namespace app\controllers;
 use app\database\models\User;
 use core\library\Request;
 use app\database\models\Post;
+use core\library\Response;
+
 
 class HomeController
 {
@@ -13,7 +15,7 @@ class HomeController
     ) {
     }
 
-    public function index(int $page = 1)
+    public function index(int $page = 1): Response
     {
         $user = new User;
 
