@@ -3,7 +3,7 @@
 namespace core\library\router;
 
 use core\enums\Method;
-use core\library\container\Container;
+use core\interfaces\IClassLoader;
 
 abstract class Router
 {
@@ -12,16 +12,16 @@ abstract class Router
     /** @var RouteOptions[] $groupOptions */
     private static array $groupOptions = [];
     private static string $defaultNamespace;
-    private static Container $container;
+    private static IClassLoader $classLoader;
 
     public static function setDefaultNamespace(string $namespace): void
     {
         self::$defaultNamespace = $namespace;
     }
 
-    public static function setContainer(Container $container): void
+    public static function setCustomClassLoader(IClassLoader $customClassLoader): void
     {
-        self::$container = $container;
+        self::$classLoader = $customClassLoader;
     }
 
     private static function getCurrentUri(): string
@@ -128,19 +128,15 @@ abstract class Router
         $route->executeMiddlewares();
         $parameters = array_merge($route->getParameters(), self::$params);
 
-        call_user_func($route->getAction(), ...$parameters);
-    }
+        if (!isset(self::$classLoader))
+            self::$classLoader = new ClassLoader();
 
-    private static function executeWithDI(Route $route): void
-    {
-        $route->executeMiddlewares();
-        $parameters = array_merge($route->getParameters(), self::$params);
-        $action = $route->getAction(true);
-        if (is_callable($action)) {
-            call_user_func($action, ...$parameters);
-        } else {
-            [$controller, $method] = $action;
-            self::$container->call($controller, $method, $parameters);
+        $action = $route->getAction();
+        if (is_callable($action))
+            self::$classLoader->loadClosure($action, $parameters);
+        elseif (is_array($action)) {
+            extract($action);
+            self::$classLoader->loadClass($controller, $method, $parameters);
         }
     }
 
@@ -155,10 +151,7 @@ abstract class Router
     {
         try {
             $route = self::find();
-            if (isset(self::$container))
-                self::executeWithDI($route);
-            else
-                self::execute($route);
+            self::execute($route);
         } catch (\Exception $e) {
             if ($errors)
                 call_user_func($errors, $e);

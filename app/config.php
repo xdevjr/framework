@@ -1,4 +1,5 @@
 <?php
+use app\library\ClassLoaderDI;
 use core\enums\Drivers;
 use core\library\router\Router;
 use core\library\database\Entity;
@@ -30,5 +31,5 @@ Router::setDefaultNamespace('app\controllers\\');
 $container = new Container;
 $container->addDefinitions(root("/app/definitions/definitions.php"));
 
-Router::setContainer($container);
+Router::setCustomClassLoader(new ClassLoaderDI($container));
 Application::resolve($container);
