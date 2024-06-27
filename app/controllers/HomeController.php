@@ -2,13 +2,9 @@
 
 namespace app\controllers;
 
-use core\library\database\Connection;
-use core\library\database\query\QB;
+use app\database\models\User;
 use core\library\Request;
-use core\library\Response;
-use Faker\Factory;
 use app\database\models\Post;
-use app\database\entities\UserEntity;
 
 class HomeController
 {
@@ -17,23 +13,11 @@ class HomeController
     ) {
     }
 
-    public function index(int $page = 1): Response
+    public function index(int $page = 1)
     {
-        $faker = Factory::create("pt_BR");
-        $user = new UserEntity([
-            "firstName" => $faker->firstName,
-            "lastName" => $faker->lastName,
-            "email" => $faker->email,
-            "password" => $faker->password,
-        ]);
+        $user = new User;
 
-        $users = $user->model()->all()->paginate($links, 3, $page, url("web.home", [null]))->relationWith(Post::class, "user_id", alias: "posts")->result();
-
-
-        // $queryBuilder = QB::create("users", Connection::get());
-        // dump($queryBuilder->query("SELECT * FROM users")->fetchAll());
-        // dump($queryBuilder->select()->paginate($paginator, 3, $page, "/")->fetchAll());
-        // echo $paginator->generateLinks(false);
+        $users = $user->all()->paginate($links, 3, $page, url("web.home", [null]))->relationWith(Post::class, "user_id", alias: "posts")->result();
 
         return view("home", [
             "users" => $users,

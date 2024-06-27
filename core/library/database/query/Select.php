@@ -14,7 +14,6 @@ class Select
         "order" => "",
         "group" => "",
         "join" => "",
-        "fields" => "",
         "total" => "",
     ];
     private array $binds = [];
@@ -24,7 +23,6 @@ class Select
         private array $fields = ["*"]
     ) {
         $fields = implode(", ", $fields);
-        $this->query["fields"] = $fields;
         $this->query["select"] = "select {$fields} from {$table}";
     }
 
@@ -92,19 +90,17 @@ class Select
         return $this;
     }
 
-    public function join(string $table, array $fields, string $type = "inner"): static
+    public function join(string $table, string $type = "inner"): static
     {
-        $fields = $this->query["fields"] . ", " . implode(", ", $fields);
         if (!$this->query["join"]) {
-            $this->query["select"] = "";
-            $this->query["join"] = "select {$fields} from {$this->table} {$type} join {$table}";
+            $this->query["join"] = " {$type} join {$table}";
         } else {
             $this->query["join"] .= " {$type} join {$table}";
         }
         return $this;
     }
 
-    public function on(string $field, string $operator, string $joinField): static
+    public function on(string $field, string $joinField, string $operator = "="): static
     {
         if (empty($this->query["join"]))
             throw new \Exception("You must use join before using on!");
@@ -127,7 +123,7 @@ class Select
      */
     public function paginate(&$paginator, int $limit, int $currentPage = 1, string $link = "?page=", int $maxLinksPerPage = 5): static
     {
-        $totalItems = $this->totalItems();
+        $totalItems = $this->count();
         $paginator = new Paginator($currentPage, $limit, $totalItems, $link, $maxLinksPerPage);
         $this->limit($paginator->getLimit())->offset($paginator->getOffset());
         return $this;
@@ -191,9 +187,9 @@ class Select
         return $this->execute()->fetchAll($fetchMode, $className);
     }
 
-    public function totalItems(): int
+    public function count(string $field = "*"): int
     {
-        $query = "select count(*) as total " . substr($this->getQuery(), strpos($this->getQuery(), "from"));
+        $query = "select count({$field}) as total " . substr($this->getQuery(), strpos($this->getQuery(), "from"));
         $statement = $this->connection->prepare($query);
         $statement->execute($this->getBinds());
         $total = $statement->fetchColumn();

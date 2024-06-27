@@ -64,7 +64,7 @@ abstract class DBLayer
     public function find(array|int|string $value, string $by = "id", string $operator = "=", string ...$fields): static
     {
         $this->currentSelect = $this->queryBuilder()->select(...$fields)->where($by, $operator, $value);
-        if ($this->currentSelect->totalItems() > 1) {
+        if ($this->currentSelect->count() > 1) {
             $result = $this->currentSelect->fetchAll($this->getEntity());
         } else {
             $result = $this->currentSelect->fetchObject($this->getEntity());
