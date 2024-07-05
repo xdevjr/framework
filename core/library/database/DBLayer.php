@@ -35,7 +35,7 @@ abstract class DBLayer
         return $this->queryBuilder;
     }
 
-    private function getEntity(): string
+    public function getEntity(): string
     {
         $reflect = new \ReflectionClass(static::class);
         $entity = self::$entityNamespace . $reflect->getShortName() . "Entity";
@@ -61,7 +61,7 @@ abstract class DBLayer
     /**
      * @param string[] $fields Default is ["*"]
      */
-    public function find(array|int|string $value, string $by = "id", string $operator = "=", string ...$fields): static
+    public function find(array|int|string $value, string $by = "id", string $operator = "=", array $fields = ["*"]): static
     {
         $this->currentSelect = $this->queryBuilder()->select(...$fields)->where($by, $operator, $value);
         if ($this->currentSelect->count() > 1) {
