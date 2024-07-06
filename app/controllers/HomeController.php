@@ -19,7 +19,7 @@ class HomeController
     {
         $user = new User;
 
-        $users = $user->all()->paginate($links, 3, $page, url("web.home", [null]))->relationWith(Post::class, "user_id", alias: "posts")->result();
+        $users = $user->all()->paginate($links, 3, $page, url("home", ["page" => null]))->relationWith(Post::class, "user_id", alias: "posts")->result();
 
         return view("home", [
             "users" => $users,

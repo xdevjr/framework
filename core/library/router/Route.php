@@ -7,7 +7,7 @@ use core\enums\Method;
 
 class Route
 {
-    private string $path;
+    private array $path;
 
     public function __construct(
         private Method $method,
@@ -16,8 +16,25 @@ class Route
         private RouteOptions $routeOptions
     ) {
         $this->uri = $this->routeOptions->getOption("prefix") . "/" . ltrim($this->uri, "/");
-        $this->path = $this->uri;
+        $this->setPath($this->uri);
         $this->parseRoute();
+    }
+
+    private function setPath(string $path): void
+    {
+        $path = rtrim($path, "/") ?: "/";
+        $path = explode("/", $path);
+        $path = array_reduce($path, function ($carry, $item) {
+            if (preg_match("/\{.+?\}/", $item)) {
+                [$name, $wildcard] = explode(":", trim($item, "{}"));
+                $carry[$name] = ltrim(RouteWildcard::get($wildcard), "?");
+            } else {
+                $carry[] = $item;
+            }
+
+            return $carry;
+        }, []);
+        $this->path = $path;
     }
 
     public function getUri(): string
@@ -25,7 +42,7 @@ class Route
         return $this->uri;
     }
 
-    public function getPath(): string
+    public function getPath(): array
     {
         return $this->path;
     }
@@ -49,11 +66,7 @@ class Route
 
     public function getParametersNames(): ?array
     {
-        preg_match_all("/\{.+?\}/", $this->path, $matches);
-        return array_map(function ($value) {
-            [$name] = explode(":", $value);
-            return trim($name, "{}");
-        }, $matches[0]) ?? null;
+        return array_filter($this->path, fn($item) => is_string($item), ARRAY_FILTER_USE_KEY) ?? null;
     }
 
     public function getRegex(): string

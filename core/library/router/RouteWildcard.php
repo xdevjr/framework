@@ -15,8 +15,20 @@ abstract class RouteWildcard
         self::$wildcards[$name] ??= $pattern;
     }
 
-    public static function get(): array
+    public static function get(?string $key = null): array|string
     {
+        if ($key) {
+            if (str_contains($key, "?")) {
+                $key = substr($key, 1);
+                $wildcard = self::$wildcards[$key];
+                $wildcard = $wildcard ? "?({$wildcard})?" : "";
+            } else {
+                $wildcard = self::$wildcards[$key] ?? "";
+            }
+
+            return $wildcard;
+        }
+
         return self::$wildcards;
     }
 

@@ -40,8 +40,8 @@ abstract class Router
     {
         $routeFound = array_values(array_filter(self::$routes, fn($route) => $route->getName() === $name))[0] ?? null;
 
-        if (!array_is_list($parameters) and !empty($parameters))
-            throw new \Exception("The parameters cannot be an associative array!");
+        if (array_is_list($parameters) and !empty($parameters))
+            throw new \Exception("The parameters must be an associative array!");
 
         if (array_is_list($getParameters) and !empty($getParameters))
             throw new \Exception("The getParameters must be an associative array!");
@@ -49,22 +49,20 @@ abstract class Router
         $getParametersString = $getParameters ? "?" . http_build_query($getParameters) : "";
 
         if ($routeFound) {
-            $explodePath = explode('/', $routeFound->getPath());
-            $explodeUri = explode('/', $routeFound->getUri());
-            $diff = array_diff($explodeUri, $explodePath);
-
-            if (count($diff) == count($parameters)) {
-                for ($i = 0; $i < count($parameters); $i++) {
-                    if (preg_match('/' . ltrim($explodeUri[array_keys($diff)[$i]], '?') . '/', $parameters[$i] ?? ""))
-                        $explodePath[array_keys($diff)[$i]] = $parameters[$i];
+            $path = $routeFound->getPath();
+            $params = $routeFound->getParametersNames();
+            if (count($params) == count($parameters)) {
+                foreach ($params as $name => $regex) {
+                    if (preg_match("/{$regex}/", $parameters[$name] ?? ""))
+                        $path[$name] = $parameters[$name];
                     else
                         throw new \Exception('The parameter type does not match what is required!');
                 }
             } else {
-                throw new \Exception('The number of parameters must be: ' . count($diff) . ', you passed: ' . count($parameters) . '!');
+                throw new \Exception('The number of parameters must be: ' . count($params) . ', you passed: ' . count($parameters) . '!');
             }
 
-            $url = implode('/', $explodePath);
+            $url = implode('/', $path);
             return $url . $getParametersString;
         }
 
@@ -116,10 +114,10 @@ abstract class Router
 
         sort($routes);
         $route = $routes[0];
-        $explodeRoute = explode('/', ltrim($route->getPath(), '/'));
-        $explodeCurrentUri = explode('/', ltrim(self::getCurrentUri(), '/'));
-        $params = array_filter(array_diff($explodeCurrentUri, $explodeRoute));
-        self::$params = $params ? array_combine($route->getParametersNames(), $params) : [];
+        $path = $route->getPath();
+        $explodeCurrentUri = explode('/', self::getCurrentUri());
+        $params = array_filter(array_diff($explodeCurrentUri, $path));
+        self::$params = $params ? array_combine(array_keys($route->getParametersNames()), $params) : [];
 
         return $route;
     }
