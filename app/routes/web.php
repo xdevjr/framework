@@ -4,7 +4,7 @@ use app\middlewares\CSRF;
 use app\middlewares\Teste;
 use core\library\router\Router;
 
-Router::group(["middlewares" => [CSRF::class]], function () {
+Router::group(["middlewares" => [CSRF::class], "namespace" => "app\controllers"], function () {
 
     Router::get("/{page:?num}", "HomeController@index")->name("home");
 

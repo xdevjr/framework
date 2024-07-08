@@ -80,7 +80,9 @@ class Route
     {
         if (!is_callable($this->callback)) {
             [$controller, $method] = $this->callback;
-            $controller = $this->getNamespace() . $controller;
+
+            if (!str_contains($controller, "\\"))
+                $controller = $this->getNamespace() . $controller;
 
             if (!class_exists($controller) || !method_exists($controller, $method))
                 throw new \Exception("Controller {$controller} or method {$method} were not found!", 501);

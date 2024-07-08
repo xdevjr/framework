@@ -35,6 +35,7 @@ class RouteOptions
     public function getOption(string $option): string|array
     {
         $this->prefix = empty($this->prefix) ? $this->prefix : "/" . trim($this->prefix, "/");
+        $this->namespace = empty($this->namespace) ? $this->namespace : (str_ends_with($this->namespace, "\\") ? $this->namespace : $this->namespace . "\\");
         return $this->{$option};
     }
 
@@ -69,7 +70,6 @@ class RouteOptions
 
     public function clearNonGroupOptions(): static
     {
-        $this->parameters = [];
         $this->name = "";
         $this->customRegex = "";
 

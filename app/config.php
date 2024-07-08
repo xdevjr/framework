@@ -24,9 +24,8 @@ Connection::add(
     )
 );
 
-DBLayer::setEntityNamespace('app\database\entities\\');
-Entity::setModelNamespace('app\database\models\\');
-Router::setDefaultNamespace('app\controllers\\');
+DBLayer::setEntityNamespace('app\database\entities');
+Entity::setModelNamespace('app\database\models');
 
 $container = new Container;
 $container->addDefinitions(root("/app/definitions/definitions.php"));

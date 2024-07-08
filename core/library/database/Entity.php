@@ -5,12 +5,12 @@ namespace core\library\database;
 #[\AllowDynamicProperties]
 abstract class Entity
 {
-    protected static string $modelNamespace = "app\\database\\models\\";
+    protected static string $modelNamespace = 'app\database\models\\';
     private ?DBLayer $model = null;
 
     public static function setModelNamespace(string $namespace): void
     {
-        self::$modelNamespace = $namespace;
+        self::$modelNamespace = str_ends_with($namespace, "\\") ? $namespace : $namespace . "\\";
     }
 
     public function __construct(array $properties = [])

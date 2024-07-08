@@ -11,17 +11,11 @@ abstract class Router
     private static ?array $params = null;
     /** @var RouteOptions[] $groupOptions */
     private static array $groupOptions = [];
-    private static string $defaultNamespace;
-    private static IClassLoader $classLoader;
-
-    public static function setDefaultNamespace(string $namespace): void
-    {
-        self::$defaultNamespace = $namespace;
-    }
+    private static IClassLoader $customClassLoader;
 
     public static function setCustomClassLoader(IClassLoader $customClassLoader): void
     {
-        self::$classLoader = $customClassLoader;
+        self::$customClassLoader = $customClassLoader;
     }
 
     private static function getCurrentUri(): string
@@ -38,7 +32,11 @@ abstract class Router
 
     public static function getUri(string $name, array $parameters = [], array $getParameters = []): string
     {
-        $routeFound = array_values(array_filter(self::$routes, fn($route) => $route->getName() === $name))[0] ?? null;
+        $routeFound = array_reduce(self::$routes, function ($carry, $route) use ($name) {
+            if ($route->getName() === $name)
+                $carry = $route;
+            return $carry;
+        });
 
         if (array_is_list($parameters) and !empty($parameters))
             throw new \Exception("The parameters must be an associative array!");
@@ -85,17 +83,11 @@ abstract class Router
      */
     public static function map(Method $method, string $uri, \Closure|string|array $callback, array|RouteOptions $routeOptions = new RouteOptions): Route
     {
-        $defaultNamespace = self::$defaultNamespace ?: "";
         $routeOptions = is_array($routeOptions) ? RouteOptions::create(...$routeOptions) : $routeOptions;
         $routeOptions->merge(...self::$groupOptions ?? new RouteOptions);
 
-        if (!is_callable($callback)) {
-            if (is_string($callback)) {
-                $callback = explode('@', $callback);
-            }
-
-            $callback[0] = $defaultNamespace . $callback[0];
-        }
+        if (is_string($callback))
+            $callback = explode('@', $callback);
 
         return self::$routes[] = new Route($method, $uri, $callback, $routeOptions);
     }
@@ -112,8 +104,7 @@ abstract class Router
         if (!$routes)
             throw new \Exception("Method not allowed for this route!", 405);
 
-        sort($routes);
-        $route = $routes[0];
+        $route = array_shift($routes);
         $path = $route->getPath();
         $explodeCurrentUri = explode('/', self::getCurrentUri());
         $params = array_filter(array_diff($explodeCurrentUri, $path));
@@ -127,15 +118,14 @@ abstract class Router
         $route->executeMiddlewares();
         $parameters = array_merge($route->getParameters(), self::$params);
 
-        if (!isset(self::$classLoader))
-            self::$classLoader = new ClassLoader();
+        $classLoader = self::$customClassLoader ?? new ClassLoader();
 
         $action = $route->getAction();
         if (is_callable($action))
-            self::$classLoader->loadClosure($action, $parameters);
+            $classLoader->loadClosure($action, $parameters);
         elseif (is_array($action)) {
             extract($action);
-            self::$classLoader->loadClass($controller, $method, $parameters);
+            $classLoader->loadClass($controller, $method, $parameters);
         }
     }
 

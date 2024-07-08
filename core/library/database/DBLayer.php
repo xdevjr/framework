@@ -13,12 +13,12 @@ abstract class DBLayer
     protected ?QB $queryBuilder = null;
     protected ?Select $currentSelect = null;
     protected array|Entity|null $results = null;
-    protected static string $entityNamespace = "app\\database\\entities\\";
+    protected static string $entityNamespace = 'app\database\entities\\';
     public ?Entity $entity = null;
 
     public static function setEntityNamespace(string $namespace): void
     {
-        self::$entityNamespace = $namespace;
+        self::$entityNamespace = str_ends_with($namespace, '\\') ? $namespace : $namespace . '\\';
     }
 
     public function setEntity(Entity $entity): static
