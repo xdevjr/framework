@@ -5,12 +5,12 @@ namespace core\library;
 readonly class Request
 {
     public function __construct(
-        private array $get,
-        private array $post,
-        private array $json,
-        private array $files,
-        private array $cookie,
-        private array $server
+        public array $get,
+        public array $post,
+        public array $json,
+        public array $files,
+        public array $cookie,
+        public array $server
     ) {
     }
 
@@ -42,12 +42,24 @@ readonly class Request
         return $filter ? $this->filter($request, $object) : ($object ? (object) $request : $request);
     }
 
-    public function only(string $request, bool $filter = true, bool $object = false): object|array
+    public function only(string|array $requests, bool $filter = false, bool $object = false): object|array
     {
-        if (!property_exists($this, $request))
-            throw new \Exception("Request {$request} does not exist!");
+        if (is_array($requests)) {
+            $requests = array_reduce($requests, function ($carry, $request) {
+                if (!property_exists($this, $request))
+                    throw new \Exception("Request {$request} does not exist!");
 
-        return $filter ? $this->filter($this->$request, $object) : ($object ? (object) $this->$request : $this->$request);
+                $carry[$request] = $this->$request;
+                return $carry;
+            }, []);
+        } else {
+            if (!property_exists($this, $requests))
+                throw new \Exception("Request {$requests} does not exist!");
+
+            $requests = $this->$requests;
+        }
+
+        return $filter ? $this->filter($requests, $object) : ($object ? (object) $requests : $requests);
     }
 
     public function input(string $key, mixed $default = null, bool $filter = true): mixed
