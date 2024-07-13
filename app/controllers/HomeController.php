@@ -6,6 +6,7 @@ use app\database\models\User;
 use core\library\Request;
 use app\database\models\Post;
 use core\library\Response;
+use core\library\router\attributes\Get;
 
 
 class HomeController
@@ -15,6 +16,7 @@ class HomeController
     ) {
     }
 
+    #[Get("/{page:?num}", ["name" => "home"])]
     public function index(int $page = 1): Response
     {
         $user = new User;

@@ -4,6 +4,7 @@ namespace core\library\router;
 
 use core\enums\Method;
 use core\interfaces\IClassLoader;
+use core\library\router\attributes\Get;
 
 abstract class Router
 {
@@ -126,6 +127,32 @@ abstract class Router
         elseif (is_array($action)) {
             extract($action);
             $classLoader->loadClass($controller, $method, $parameters);
+        }
+    }
+
+    /**
+     * Scan the directory and set the routes using the Router attributes
+     * @param string $dir Absolute path to the directory containing the classes using the Router attributes
+     * @param string $namespace Namespace of the classes
+     * @return void
+     */
+    public static function setAttributeRoutes(string $dir, string $namespace = 'app\controllers\\'): void
+    {
+        $controllers = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
+        foreach ($controllers as $controller) {
+            $file = $controller->getFilename();
+            $class = $namespace . str_replace(".php", "", $file);
+            $controller = new \ReflectionClass($class);
+            $methods = $controller->getMethods();
+            foreach ($methods as $method) {
+                $attr = $method->getAttributes(Get::class, \ReflectionAttribute::IS_INSTANCEOF);
+                if ($attr) {
+                    $action = [$controller->getName(), $method->getName()];
+                    foreach ($attr as $a) {
+                        $a->newInstance()->setRoute($action);
+                    }
+                }
+            }
         }
     }
 

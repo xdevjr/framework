@@ -6,8 +6,6 @@ use core\library\router\Router;
 
 Router::group(["middlewares" => [CSRF::class], "namespace" => "app\controllers"], function () {
 
-    Router::get("/{page:?num}", "HomeController@index")->name("home");
-
     Router::group(["prefix" => "/admin", "groupName" => "admin", "middlewares" => [Auth::class, Teste::class]], function () {
 
         Router::get("/", function () {
