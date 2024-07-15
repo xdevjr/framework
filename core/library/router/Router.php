@@ -136,11 +136,13 @@ abstract class Router
      * @param string $namespace Namespace of the classes
      * @return void
      */
-    public static function setAttributeRoutes(string $dir, string $namespace = 'app\controllers\\'): void
+    public static function setAttributeRoutes(string $dir, string $namespace = 'app\controllers'): void
     {
         $dir = realpath($dir);
         if (!is_dir($dir))
             throw new \Exception("The directory does not exist!");
+
+        $namespace = str_ends_with($namespace, "\\") ? $namespace : $namespace . "\\";
 
         $controllers = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
         foreach ($controllers as $controller) {
