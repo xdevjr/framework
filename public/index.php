@@ -7,6 +7,6 @@ use core\library\router\Router;
 
 require root("/app/routes/web.php");
 require root("/app/routes/api.php");
-Router::setAttributeRoutes(root("app/controllers"));
+Router::setAttributeRoutes("../app/controllers");
 
 Router::start();

@@ -132,12 +132,16 @@ abstract class Router
 
     /**
      * Scan the directory and set the routes using the Router attributes
-     * @param string $dir Absolute path to the directory containing the classes using the Router attributes
+     * @param string $dir Path to the directory containing the classes using the Router attributes
      * @param string $namespace Namespace of the classes
      * @return void
      */
     public static function setAttributeRoutes(string $dir, string $namespace = 'app\controllers\\'): void
     {
+        $dir = realpath($dir);
+        if (!is_dir($dir))
+            throw new \Exception("The directory does not exist!");
+
         $controllers = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
         foreach ($controllers as $controller) {
             $file = $controller->getFilename();

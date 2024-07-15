@@ -23,8 +23,13 @@ class Container
      */
     public function addDefinitions(array|string $definitions): void
     {
-        if (is_string($definitions) and file_exists($definitions))
+        if (is_string($definitions)) {
+            $definitions = realpath($definitions);
+            if (!file_exists($definitions))
+                throw new \Exception("The definitions file does not exist!");
+
             $definitions = require $definitions;
+        }
 
         if (!is_array($definitions) or array_is_list($definitions))
             throw new \Exception("The definitions must be an associative array or a path to a file that returns an associative array!");

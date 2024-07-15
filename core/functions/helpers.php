@@ -34,7 +34,7 @@ function view(string $view, array $data = []): Response
     $twig = new Environment($loader);
 
     return response(
-        $twig->render("$view.twig.php", $data)
+        $twig->render("{$view}.twig.php", $data)
     );
 }
 

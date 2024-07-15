@@ -24,8 +24,9 @@ class HomeController
         $users = $user->all()->paginate($links, 3, $page, url("home", ["page" => null]))->relationWith(Post::class, "user_id", alias: "posts")->result();
 
         return view("home", [
+            "title" => "Home",
             "users" => $users,
-            "paginate" => $links->bootstrap(),
+            "paginate" => $links->bootstrap()
         ]);
     }
 
