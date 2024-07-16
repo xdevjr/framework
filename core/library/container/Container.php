@@ -21,21 +21,23 @@ class Container
      * @param array|string $definitions array of definitions or absolute path to the file that returns array of definitions
      * @return void
      */
-    public function addDefinitions(array|string $definitions): void
+    public function __construct(array|string|null $definitions = null)
     {
-        if (is_string($definitions)) {
-            $definitions = realpath($definitions);
-            if (!file_exists($definitions))
-                throw new \Exception("The definitions file does not exist!");
+        if ($definitions) {
+            if (is_string($definitions)) {
+                $definitions = realpath($definitions);
+                if (!file_exists($definitions))
+                    throw new \Exception("The definitions file does not exist!");
 
-            $definitions = require $definitions;
+                $definitions = require $definitions;
+            }
+
+            if (!is_array($definitions) or array_is_list($definitions))
+                throw new \Exception("The definitions must be an associative array or a path to a file that returns an associative array!");
+
+            foreach ($definitions as $key => $value)
+                $this->bind($key, $value);
         }
-
-        if (!is_array($definitions) or array_is_list($definitions))
-            throw new \Exception("The definitions must be an associative array or a path to a file that returns an associative array!");
-
-        foreach ($definitions as $key => $value)
-            $this->bind($key, $value);
     }
 
     /**

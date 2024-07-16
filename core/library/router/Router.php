@@ -4,7 +4,7 @@ namespace core\library\router;
 
 use core\enums\Method;
 use core\interfaces\IClassLoader;
-use core\library\router\attributes\Get;
+use core\interfaces\IRouteAttribute;
 
 abstract class Router
 {
@@ -147,15 +147,14 @@ abstract class Router
         $controllers = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
         foreach ($controllers as $controller) {
             $file = $controller->getFilename();
-            $class = $namespace . str_replace(".php", "", $file);
-            $controller = new \ReflectionClass($class);
-            $methods = $controller->getMethods();
+            $className = $namespace . str_replace(".php", "", $file);
+            $class = new \ReflectionClass($className);
+            $methods = $class->getMethods();
             foreach ($methods as $method) {
-                $attr = $method->getAttributes(Get::class, \ReflectionAttribute::IS_INSTANCEOF);
+                $attr = $method->getAttributes(IRouteAttribute::class, \ReflectionAttribute::IS_INSTANCEOF);
                 if ($attr) {
-                    $action = [$controller->getName(), $method->getName()];
                     foreach ($attr as $a) {
-                        $a->newInstance()->setRoute($action);
+                        $a->newInstance()->setRoute([$class->getName(), $method->getName()]);
                     }
                 }
             }

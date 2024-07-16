@@ -27,8 +27,7 @@ Connection::add(
 DBLayer::setEntityNamespace('app\database\entities');
 Entity::setModelNamespace('app\database\models');
 
-$container = new Container;
-$container->addDefinitions(root("/app/definitions/definitions.php"));
+$container = new Container("../app/definitions/definitions.php");
 
 Router::setCustomClassLoader(new ClassLoaderDI($container));
 Application::resolve($container);
