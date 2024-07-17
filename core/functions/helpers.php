@@ -77,9 +77,9 @@ function slugify(string $string, string $delimiter = "-"): string
     return $slug;
 }
 
-function url(string $nameOrPath, array $parameters = [], array $getParameters = []): string
+function url(string $name, array $parameters = [], array $getParameters = []): string|false
 {
-    return Router::getUri($nameOrPath, $parameters, $getParameters);
+    return Router::getUriByName($name, $parameters, $getParameters);
 }
 
 function flash(string $key, mixed $value, string $redirectTo = null): void

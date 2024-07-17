@@ -5,6 +5,7 @@ namespace core\library\router;
 use core\enums\Method;
 use core\interfaces\IClassLoader;
 use core\interfaces\IRouteAttribute;
+use core\library\router\attributes\RouteGroup;
 
 abstract class Router
 {
@@ -31,7 +32,7 @@ abstract class Router
         return strtoupper($_REQUEST["_method"] ?? $_SERVER['REQUEST_METHOD']);
     }
 
-    public static function getUri(string $name, array $parameters = [], array $getParameters = []): string
+    public static function getUriByName(string $name, array $parameters = [], array $getParameters = []): string|false
     {
         $routeFound = array_reduce(self::$routes, function ($carry, $route) use ($name) {
             if ($route->getName() === $name)
@@ -65,7 +66,7 @@ abstract class Router
             return $url . $getParametersString;
         }
 
-        return $name . $getParametersString;
+        return false;
     }
 
     public static function group(array|RouteOptions $groupOptions, \Closure $callback): void
@@ -133,10 +134,11 @@ abstract class Router
     /**
      * Scan the directory and set the routes using the Router attributes
      * @param string $dir Path to the directory containing the classes using the Router attributes
-     * @param string $namespace Namespace of the classes
+     * @param string $namespace Namespace for directory classes
+     * @throws \Exception
      * @return void
      */
-    public static function setAttributeRoutes(string $dir, string $namespace = 'app\controllers'): void
+    public static function searchRouteAttributes(string $dir, string $namespace = 'app\controllers'): void
     {
         $dir = realpath($dir);
         if (!is_dir($dir))
@@ -145,19 +147,47 @@ abstract class Router
         $namespace = str_ends_with($namespace, "\\") ? $namespace : $namespace . "\\";
 
         $controllers = new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS);
-        foreach ($controllers as $controller) {
-            $file = $controller->getFilename();
-            $className = $namespace . str_replace(".php", "", $file);
-            $class = new \ReflectionClass($className);
-            $methods = $class->getMethods();
-            foreach ($methods as $method) {
-                $attr = $method->getAttributes(IRouteAttribute::class, \ReflectionAttribute::IS_INSTANCEOF);
-                if ($attr) {
-                    foreach ($attr as $a) {
-                        $a->newInstance()->setRoute([$class->getName(), $method->getName()]);
-                    }
-                }
+        foreach ($controllers as $controller)
+            if ($controller->isFile() and $controller->getExtension() === "php") {
+                $file = $controller->getFilename();
+                $className = $namespace . str_replace(".php", "", $file);
+                self::setAttributeRoutesByClassName($className);
             }
+    }
+
+    /**
+     * Verify if the class has the Router attribute and set the routes
+     * @param string[] $classNames
+     * @throws \Exception
+     * @return void
+     */
+    public static function setAttributeRoutesByClassName(string ...$classNames): void
+    {
+        foreach ($classNames as $className) {
+            if (!class_exists($className))
+                throw new \Exception("The class {$className} was not found!");
+
+            $class = new \ReflectionClass($className);
+            $classAttr = $class->getAttributes(RouteGroup::class, \ReflectionAttribute::IS_INSTANCEOF);
+            $methods = $class->getMethods();
+            if ($classAttr) {
+                $classAttr = $classAttr[0]->newInstance();
+                $classAttr->setGroupRoutes(function () use ($methods, $class) {
+                    self::setRoutesWithAttribute($methods, $class->getName());
+                });
+            } else {
+                self::setRoutesWithAttribute($methods, $class->getName());
+            }
+        }
+    }
+
+    private static function setRoutesWithAttribute(array $methods, string $className): void
+    {
+        foreach ($methods as $method) {
+            $attr = $method->getAttributes(IRouteAttribute::class, \ReflectionAttribute::IS_INSTANCEOF);
+            if ($attr)
+                foreach ($attr as $a)
+                    $a->newInstance()->setRoute([$className, $method->getName()]);
         }
     }
 
